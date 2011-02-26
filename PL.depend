@@ -1,0 +1,145 @@
+# depslib dependency file v1.0
+1298585948 source:/media/disk/Files/Projects/PL/src/cbase.cpp
+	"cbase.h"
+
+1298585948 /media/disk/Files/Projects/PL/src/cbase.h
+	<cctype>
+	<string>
+	<vector>
+	<algorithm>
+	<fstream>
+	<sstream>
+	<iostream>
+	<iomanip>
+	<dirent.h>
+	<stdlib.h>
+	<errno.h>
+	<sys/stat.h>
+	<sys/types.h>
+	"SDL.h"
+	"SDL_ttf.h"
+	"SDL_image.h"
+
+1298669165 source:/media/disk/Files/Projects/PL/src/cconfig.cpp
+	"cconfig.h"
+
+1298668277 /media/disk/Files/Projects/PL/src/cconfig.h
+	"cbase.h"
+
+1298585822 source:/media/disk/Files/Projects/PL/src/cprofile.cpp
+	"cprofile.h"
+
+1298488838 /media/disk/Files/Projects/PL/src/cprofile.h
+	"cbase.h"
+	"czip.h"
+
+1298655015 /media/disk/Files/Projects/PL/src/czip.h
+	"cbase.h"
+	"unzip/unzip.h"
+
+1266227902 /media/disk/Files/Projects/PL/src/unzip/unzip.h
+	"zlib.h"
+	"ioapi.h"
+	"bzlib.h"
+
+1291824516 /media/disk/Files/Projects/PL/src/unzip/ioapi.h
+	<stdio.h>
+	<stdlib.h>
+	"zlib.h"
+	<stdint.h>
+	"mz64conf.h"
+	"stdint.h"
+
+1298655896 source:/media/disk/Files/Projects/PL/src/czip.cpp
+	"czip.h"
+
+1298584616 source:/media/disk/Files/Projects/PL/src/main.cpp
+	"main.h"
+
+1298584622 /media/disk/Files/Projects/PL/src/main.h
+	"version.h"
+	"cselector.h"
+
+1296249018 /media/disk/Files/Projects/PL/src/version.h
+
+1298661512 /media/disk/Files/Projects/PL/src/cselector.h
+	"version.h"
+	"cbase.h"
+	"cconfig.h"
+	"cprofile.h"
+
+1298666367 source:/media/disk/Files/Projects/PL/src/cselector.cpp
+	"cselector.h"
+
+1297971942 source:/media/disk-1/Files/Projects/PL/src/cbase.cpp
+	"cbase.h"
+
+1298050376 /media/disk-1/Files/Projects/PL/src/cbase.h
+	<cctype>
+	<string>
+	<vector>
+	<algorithm>
+	<fstream>
+	<sstream>
+	<iostream>
+	<iomanip>
+	<dirent.h>
+	<stdlib.h>
+	<errno.h>
+	<sys/stat.h>
+	<sys/types.h>
+	"SDL.h"
+	"SDL_ttf.h"
+	"SDL_image.h"
+
+1298499156 source:/media/disk-1/Files/Projects/PL/src/cconfig.cpp
+	"cconfig.h"
+
+1298499114 /media/disk-1/Files/Projects/PL/src/cconfig.h
+	"cbase.h"
+
+1298516963 source:/media/disk-1/Files/Projects/PL/src/cselector.cpp
+	"cselector.h"
+
+1298494586 /media/disk-1/Files/Projects/PL/src/cselector.h
+	"version.h"
+	"cbase.h"
+	"cconfig.h"
+	"cprofile.h"
+
+1296249018 /media/disk-1/Files/Projects/PL/src/version.h
+
+1298488838 /media/disk-1/Files/Projects/PL/src/cprofile.h
+	"cbase.h"
+	"czip.h"
+
+1298051196 /media/disk-1/Files/Projects/PL/src/czip.h
+	"cbase.h"
+	"unzip/unzip.h"
+
+1266227902 /media/disk-1/Files/Projects/PL/src/unzip/unzip.h
+	"zlib.h"
+	"ioapi.h"
+	"bzlib.h"
+
+1291824516 /media/disk-1/Files/Projects/PL/src/unzip/ioapi.h
+	<stdio.h>
+	<stdlib.h>
+	"zlib.h"
+	<stdint.h>
+	"mz64conf.h"
+	"stdint.h"
+
+1298484166 source:/media/disk-1/Files/Projects/PL/src/czip.cpp
+	"czip.h"
+
+1296350528 source:/media/disk-1/Files/Projects/PL/src/main.cpp
+	"main.h"
+
+1298040216 /media/disk-1/Files/Projects/PL/src/main.h
+	"version.h"
+	"cselector.h"
+
+1298515043 source:/media/disk-1/Files/Projects/PL/src/cprofile.cpp
+	"cprofile.h"
+
