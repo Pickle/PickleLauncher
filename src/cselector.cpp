@@ -23,6 +23,8 @@
 #include "cselector.h"
 
 CSelector::CSelector() : CBase(),
+        Redraw              (true),
+        SkipFrame           (false),
         Rescan              (true),
         RefreshList         (true),
         SetOneEntryValue    (false),
@@ -34,6 +36,16 @@ CSelector::CSelector() : CBase(),
         TextScrollOffset    (0),
         CurScrollSpeed      (0),
         CurScrollPause      (0),
+#if defined(DEBUG)
+        FramesDrawn         (0),
+        FramesSkipped       (0),
+        FPSDrawn            (0),
+        FPSSkip             (0),
+        FrameCountTime      (0),
+#endif
+        FrameEndTime        (0),
+        FrameStartTime      (0),
+        FrameDelay          (0),
         Mouse               (),
         Joystick            (NULL),
         Screen              (NULL),
@@ -194,7 +206,7 @@ int8_t CSelector::OpenResources( void )
 
     // Initialize defaults, Video and Audio subsystems
     Log( "Initializing SDL.\n" );
-    if (SDL_Init( SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK )==-1)
+    if (SDL_Init( SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_TIMER|SDL_INIT_JOYSTICK )==-1)
     {
         Log( "Failed to initialize SDL: %s.\n", SDL_GetError() );
         return 1;
@@ -392,27 +404,14 @@ int16_t CSelector::DisplayScreen( void )
             return -2;
         }
 
-        // Draw background or clear screen
-        DrawBackground();
-
         // Draw the selector
         if (DisplaySelector())
         {
             return -2;
         }
 
-        // Custom mouse pointer
-        if (Config.ShowPointer == true && ImagePointer != NULL)
-        {
-            ApplyImage( Mouse.x, Mouse.y, ImagePointer, Screen, NULL );
-        }
-
         // Update the screen
-        if (SDL_Flip( Screen ) != 0)
-        {
-            Log( "Failed to swap the buffers: %s\n", SDL_GetError() );
-        }
-        SDL_Delay( Config.RefreshDelay );
+        FlipScreen();
     }
 
     if (IsEventOn( EVENT_QUIT ) == true)
@@ -426,6 +425,54 @@ int16_t CSelector::DisplayScreen( void )
     {
         return DisplayList.at(MODE_SELECT_ENTRY).absolute;
     }
+}
+
+void CSelector::FlipScreen( void )
+{
+    if (SkipFrame == false && Redraw == true)
+    {
+        if (SDL_Flip( Screen ) != 0)
+        {
+            Log( "Failed to swap the buffers: %s\n", SDL_GetError() );
+        }
+
+        Redraw = false;
+#if defined(DEBUG)
+        FramesDrawn++;
+    }
+    else
+    {
+        FramesSkipped++;
+#endif
+    }
+
+    FrameEndTime = SDL_GetTicks();
+    FrameDelay   = (MS_PER_SEC/FRAMES_PER_SEC) - (FrameEndTime - FrameStartTime);
+
+    if (FrameDelay < 0)
+    {
+        SkipFrame = true;
+    }
+    else
+    {
+        SkipFrame = false;
+        if (FrameDelay < MS_PER_SEC)
+        {
+            SDL_Delay( FrameDelay );
+        }
+    }
+    FrameStartTime = SDL_GetTicks();
+
+#if defined(DEBUG)
+    if (FrameStartTime - FrameCountTime >= MS_PER_SEC)
+    {
+        FrameCountTime  = FrameStartTime;
+        FPSDrawn        = FramesDrawn;
+        FPSSkip         = FramesSkipped;
+        FramesDrawn     = 0;
+        FramesSkipped   = 0;
+    }
+#endif
 }
 
 void CSelector::SelectMode( void )
@@ -506,24 +553,37 @@ int8_t CSelector::DisplaySelector( void )
     {
         PopulateList();
         RefreshList = false;
+        Redraw      = true;
     }
 
-    // Draw text titles to the screen
-    if (DrawText( rect_pos ))
+    if (Redraw == true || CurScrollPause != 0 || CurScrollSpeed != 0 || TextScrollOffset != 0)
     {
-        return 1;
-    }
+        // Draw background or clear screen
+        DrawBackground();
 
-    // Draw the buttons for touchscreen
-    if (DrawButtons( rect_pos ))
-    {
-        return 1;
-    }
+        // Draw text titles to the screen
+        if (DrawText( rect_pos ))
+        {
+            return 1;
+        }
 
-    // Draw the names for the items for display
-    if (DrawNames( rect_pos ))
-    {
-        return 1;
+        // Draw the buttons for touchscreen
+        if (DrawButtons( rect_pos ))
+        {
+            return 1;
+        }
+
+        // Draw the names for the items for display
+        if (DrawNames( rect_pos ))
+        {
+            return 1;
+        }
+
+        // Custom mouse pointer
+        if (Config.ShowPointer == true && ImagePointer != NULL)
+        {
+            ApplyImage( Mouse.x, Mouse.y, ImagePointer, Screen, NULL );
+        }
     }
 
     return 0;
@@ -911,7 +971,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
             rect_clip.x = 0;
             rect_clip.y = 0;
 
-            SDL_BlitSurface( text_surface, &rect_clip, Screen, &location );
+            ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
 
             location.x -= ImageSelectPointer->w;
             location.y += text_surface->h + Config.EntryYDelta;
@@ -934,11 +994,12 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
             // Draw the selector pointer
             if (entry_index == DisplayList.at(Mode).relative)
             {
-                SDL_BlitSurface( ImageSelectPointer, NULL, Screen, &location );
+                ApplyImage( location.x, location.y,  ImageSelectPointer, Screen, NULL );
 
                 // Reset scroll settings
                 if (entry_index != LastSelectedEntry)
                 {
+                    CurScrollPause      = 0;
                     CurScrollSpeed      = 0;
                     TextScrollOffset    = 0;
                     TextScrollDir       = true;
@@ -964,12 +1025,12 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                     {
                         offset = TextScrollOffset;
 
-                        if (CurScrollPause > 0)
+                        if (CurScrollPause > 1)
                         {
                             CurScrollPause++;
                             if (CurScrollPause >= Config.ScrollPauseSpeed)
                             {
-                                CurScrollPause = 0;
+                                CurScrollPause = 1;
                             }
                         }
                         else
@@ -977,7 +1038,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                             CurScrollSpeed++;
                             if (CurScrollSpeed >= Config.ScrollSpeed)
                             {
-                                CurScrollSpeed = 0;
+                                CurScrollSpeed = 1;
                                 if (TextScrollDir == true)
                                 {
                                     TextScrollOffset += Config.ScreenRatioW;
@@ -986,17 +1047,18 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                                 {
                                     TextScrollOffset -= Config.ScreenRatioW;
                                 }
+                                Redraw = true;
                             }
 
                             if (RectEntries.at(entry_index).w+TextScrollOffset >= text_surface->w)
                             {
                                 TextScrollDir   = false;
-                                CurScrollPause  = 1;
+                                CurScrollPause  = 2;
                             }
                             else if (TextScrollOffset <= 0)
                             {
                                 TextScrollDir   = true;
-                                CurScrollPause  = 1;
+                                CurScrollPause  = 2;
                             }
                         }
                     }
@@ -1007,7 +1069,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                 rect_clip.x = offset;
                 rect_clip.y = 0;
 
-                SDL_BlitSurface( text_surface, &rect_clip, Screen, &location );
+                ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
 
                 location.x -= ImageSelectPointer->w;
                 location.y += text_surface->h + Config.EntryYDelta;
@@ -1228,10 +1290,10 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
     {
         preview.x = Config.ScreenWidth-Config.PreviewWidth-Config.EntryXOffset;
         preview.y = Config.ScreenHeight-Config.PreviewHeight-(Config.ButtonHeightRight*3)-(Config.EntryYOffset*6);
-        preview.w = Config.PreviewWidth;
-        preview.h = Config.PreviewHeight;
+        //preview.w = Config.PreviewWidth;
+        //preview.h = Config.PreviewHeight;
 
-        SDL_BlitSurface( ImagePreview, NULL, Screen, &preview );
+        ApplyImage( preview.x, preview.y, ImagePreview, Screen, NULL );
     }
 
     return 0;
@@ -1260,7 +1322,7 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
 
         if (text_surface != NULL)
         {
-            SDL_BlitSurface( text_surface, NULL, Screen, &rect_text );
+            ApplyImage( rect_text.x, rect_text.y, text_surface, Screen, NULL );
             SDL_FreeSurface( text_surface );
             text_surface = NULL;
         }
@@ -1296,7 +1358,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_LARGE), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
     if (text_surface != NULL)
     {
-        SDL_BlitSurface( text_surface, NULL, Screen, &location );
+        ApplyImage( location.x, location.y, text_surface, Screen, NULL );
         location.y += text_surface->h + Config.EntryYDelta;
 
         SDL_FreeSurface( text_surface );
@@ -1325,9 +1387,9 @@ int8_t CSelector::DrawText( SDL_Rect& location )
 
             location.x = Config.ScreenWidth - text_surface->w - Config.EntryXOffset;
 
-            SDL_BlitSurface( text_surface, &clip, Screen, &location );
+            ApplyImage( location.x, location.y, text_surface, Screen, &clip );
 
-             location.x = Config.EntryXOffset;
+            location.x = Config.EntryXOffset;
 
             SDL_FreeSurface( text_surface );
             text_surface = NULL;
@@ -1342,7 +1404,13 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     // File path
     if (Mode == MODE_SELECT_ENTRY)
     {
-        text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), Profile.FilePath.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+        text = Profile.FilePath;
+        if (Profile.ZipFile.length())
+        {
+            text += "->" + Profile.ZipFile;
+        }
+
+        text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
         if (text_surface != NULL)
         {
             clip.x = 0;
@@ -1354,7 +1422,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                 clip.x = text_surface->w-Config.FilePathMaxWidth;
             }
 
-            SDL_BlitSurface( text_surface, &clip, Screen, &location );
+            ApplyImage( location.x, location.y, text_surface, Screen, &clip );
 
             location.y += text_surface->h + Config.EntryYOffset;
 
@@ -1377,7 +1445,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         box.x = Config.ScreenWidth  - text_surface->w - Config.EntryXOffset;
         box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
 
-        SDL_BlitSurface( text_surface, NULL, Screen, &box );
+        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
         SDL_FreeSurface( text_surface );
         text_surface = NULL;
     }
@@ -1419,7 +1487,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         box.x = Config.EntryXOffset;
         box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
 
-        SDL_BlitSurface( text_surface, NULL, Screen, &box );
+        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
         SDL_FreeSurface( text_surface );
         text_surface = NULL;
     }
@@ -1448,7 +1516,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
             box.x = 5*Config.EntryXOffset;
             box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
 
-            SDL_BlitSurface( text_surface, NULL, Screen, &box );
+            ApplyImage( box.x, box.y, text_surface, Screen, NULL );
             SDL_FreeSurface( text_surface );
             text_surface = NULL;
         }
@@ -1462,7 +1530,8 @@ int8_t CSelector::DrawText( SDL_Rect& location )
 #if defined(DEBUG)
     text = "DEBUG abs " + i_to_a(DisplayList.at(Mode).absolute)  + " rel " + i_to_a(DisplayList.at(Mode).relative)
          + " 1st " + i_to_a(DisplayList.at(Mode).first) + " end " + i_to_a(DisplayList.at(Mode).last)
-         + " tot " + i_to_a(DisplayList.at(Mode).total);
+         + " tot " + i_to_a(DisplayList.at(Mode).total)
+         + " fps " + i_to_a(FPSDrawn) + " skip " + i_to_a(FPSSkip);
 
     text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
 
@@ -1471,7 +1540,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         box.x = Config.EntryXOffset;
         box.y = Config.ScreenHeight - text_surface->h;
 
-        SDL_BlitSurface( text_surface, NULL, Screen, &box );
+        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
         SDL_FreeSurface( text_surface );
         text_surface = NULL;
     }
@@ -1890,6 +1959,8 @@ int8_t CSelector::PollInputs( void )
                         break;
                     }
                 }
+
+                Redraw = true;
                 break;
 
             case SDL_MOUSEBUTTONDOWN:

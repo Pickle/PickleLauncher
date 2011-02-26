@@ -37,8 +37,7 @@ using namespace std;
 #define ARG_ZIPLIST     "--ziplist"                             /** Flag to override the ziplist file. */
 #define DEF_ZIPLIST     "ziplist.txt"                           /** Default ziplist filename. */
 
-#define ENTRY_ARROW     "-> "                                   /** Ascii fallback for the entry arrow selector. */
-
+#define ENTRY_ARROW             "-> "                            /** Ascii fallback for the entry arrow selector. */
 #define BUTTON_LABEL_ONE_UP     "<"                             /** Ascii text fallback for the one up button label. */
 #define BUTTON_LABEL_ONE_DOWN   ">"                             /** Ascii text fallback for the one down button label. */
 #define BUTTON_LABEL_PAGE_UP    "<<"                            /** Ascii text fallback for the page up button label. */
@@ -62,6 +61,9 @@ using namespace std;
 #define EVENT_LOOPS     10                                                          /** Number of loops an event must be active to be detected to be on. */
 #define IsEventOn(x)    ((EventPressCount.at(x) <= EVENT_LOOPS_ON) ? true : false)  /** Determines if an event is active. */
 #define IsEventOff(x)   ((EventPressCount.at(x) == EVENT_LOOPS_OFF) ? true : false) /** Determines if an event is inactive. */
+
+#define MS_PER_SEC      1000                                    /** Milliseconds in 1 Second. */
+#define FRAMES_PER_SEC  60                                      /** Frames in 1 Second. */
 
 /** @brief Modes of the launcher.
  */
@@ -132,6 +134,10 @@ class CSelector : public CBase
          * @return -1  for no selection otherwise the entry selection number.
          */
         int16_t DisplayScreen       ( void );
+
+        /** @brief Handles logic for measuring and counting frame drawing to the screen.
+         */
+        void    FlipScreen          ( void );
 
         /** @brief Determines the mode to run based on user input events.
          */
@@ -238,6 +244,8 @@ class CSelector : public CBase
         CSelector(const CSelector &);
         CSelector & operator=(const CSelector&);
 
+        bool                    Redraw;
+        bool                    SkipFrame;
         bool                    Rescan;             /**< Set to cause the current directory to be rescaned. */
         bool                    RefreshList;        /**< Set to cause the current display list to be populated. */
         bool                    SetOneEntryValue;   /**< Set value for the current entry to the selected value. */
@@ -249,6 +257,16 @@ class CSelector : public CBase
         uint16_t                TextScrollOffset;   /**< Number of pixels to offset the entry text surface when it will blit to the screen. */
         uint16_t                CurScrollSpeed;     /**< Current number of loops used to decide when to offset the entry text scroll effect. */
         uint16_t                CurScrollPause;     /**< Current number of loops used to decide when to pause the entry text scroll effect. */
+#if defined(DEBUG)
+        uint16_t                FramesDrawn;        /**< Counter for the number frames drawn to the screen. */
+        uint16_t                FramesSkipped;      /**< Counter for the number frames not drawn to the screen. */
+        uint16_t                FPSDrawn;           /**< Number frames drawn to the screen per second. */
+        uint16_t                FPSSkip;            /**< Number frames not drawn to the screen per second. */
+        uint16_t                FrameCountTime;     /**< Tick count from measureing FPS. */
+#endif
+        uint16_t                FrameEndTime;       /**< Tick count at the end of the frame. */
+        uint16_t                FrameStartTime;     /**< Tick count at the start of the frame. */
+        int16_t                 FrameDelay;         /**< Tick duration of the frame. */
         SDL_Rect                Mouse;              /**< Stores the absolute position of the mouse pointer. */
         SDL_Joystick*           Joystick;           /**< SDL surface reference to the first joystick device. */
         SDL_Surface*            Screen;             /**< SDL surface reference to the screen. */

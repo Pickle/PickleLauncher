@@ -388,7 +388,6 @@ class CConfig : public CBase
         int16_t             ScreenWidth;            /**< CONFIGURABLE Refer to HELP_SCREEN_WIDTH */
         int16_t             ScreenHeight;           /**< CONFIGURABLE Refer to HELP_SCREEN_HEIGHT */
         int16_t             ScreenDepth;            /**< CONFIGURABLE Refer to HELP_SCREEN_DEPTH */
-        int16_t             RefreshDelay;           /**< CONFIGURABLE Refer to HELP_REFRESH_DELAY */
         uint16_t            ScrollSpeed;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ScrollPauseSpeed;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            EntryYDelta;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
