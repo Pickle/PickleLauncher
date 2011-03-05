@@ -31,17 +31,30 @@ CSelector::CSelector() : CBase(),
         SetAllEntryValue    (false),
         TextScrollDir       (true),
         ExtractAllFiles     (false),
+        DrawState_Title     (true),
+        DrawState_About     (true),
+        DrawState_Filter    (true),
+        DrawState_FilePath  (true),
+        DrawState_Index     (true),
+        DrawState_ZipMode   (true),
+        DrawState_Preview   (true),
+        DrawState_ButtonL   (true),
+        DrawState_ButtonR   (true),
         Mode                (MODE_SELECT_ENTRY),
         LastSelectedEntry   (0),
         TextScrollOffset    (0),
         CurScrollSpeed      (0),
         CurScrollPause      (0),
-#if defined(DEBUG)
+        ListNameHeight      (0),
         FramesDrawn         (0),
         FramesSkipped       (0),
+        FramesSleep         (0),
+#if defined(DEBUG)
         FPSDrawn            (0),
         FPSSkip             (0),
+        FPSSleep            (0),
         FrameCountTime      (0),
+        LoopTimeAverage     (0),
 #endif
         FrameEndTime        (0),
         FrameStartTime      (0),
@@ -53,6 +66,15 @@ CSelector::CSelector() : CBase(),
         ImagePointer        (NULL),
         ImageSelectPointer  (NULL),
         ImagePreview        (NULL),
+        ImageTitle          (NULL),
+        ImageAbout          (NULL),
+        ImageFilePath       (NULL),
+        ImageFilter         (NULL),
+        ImageIndex          (NULL),
+        ImageZipMode        (NULL),
+#if defined(DEBUG)
+        ImageDebug          (NULL),
+#endif
         ImageButtons        (),
         Fonts               (),
         Config              (),
@@ -72,7 +94,8 @@ CSelector::CSelector() : CBase(),
         ItemsValue          (),
         RectEntries         (),
         RectButtonsLeft     (),
-        RectButtonsRight    ()
+        RectButtonsRight    (),
+        ScreenRectsDirty    ()
 {
     Fonts.resize( FONT_SIZE_TOTAL, NULL );
 
@@ -161,13 +184,25 @@ void CSelector::ProcessArguments( int argc, char** argv )
     launcher = string(argv[0]);
     Profile.LauncherName = launcher.substr( launcher.find_last_of('/')+1 );
     Profile.LauncherPath = launcher.substr( 0, launcher.find_last_of('/')+1 );
+    if (Profile.LauncherPath.compare("./") == 0 || Profile.LauncherPath.length() == 0)
+    {
+        Profile.LauncherPath = string(getenv("PWD"))+"/";
+    }
 
+#if defined(DEBUG)
+    Log( "Running from '%s'\n", launcher.c_str() );
+#endif
     Log( "Running from '%s' as '%s'\n", Profile.LauncherPath.c_str(), Profile.LauncherName.c_str() );
 
     for (arg_index=0; arg_index<argc; arg_index++ )
     {
         argument = string(argv[arg_index]);
 
+        if (argument.compare( ARG_RESETGUI ) == 0)
+        {
+            Config.ResetGUI = true;
+        }
+        else
         if (argument.compare( ARG_PROFILE ) == 0)
         {
             ProfilePath = string(argv[++arg_index]);
@@ -189,6 +224,7 @@ int8_t CSelector::OpenResources( void )
 {
     uint8_t button_index;
     uint32_t flags;
+    string text;
 
     Log( "Loading config.\n" );
     if (Config.Load( ConfigPath ))
@@ -226,6 +262,9 @@ int8_t CSelector::OpenResources( void )
         return 1;
     }
 
+    // Refresh entire screen for the first frame
+    UpdateRect( 0, 0, Config.ScreenWidth, Config.ScreenHeight );
+
     // Load joystick
 #if !defined(PANDORA) && !defined(X86)
     Joystick = SDL_JoystickOpen(0);
@@ -262,6 +301,13 @@ int8_t CSelector::OpenResources( void )
         return 1;
     }
 
+    Log( "Loading profile.\n" );
+    if (Profile.Load( ProfilePath, Config.Delimiter ))
+    {
+        Log( "Failed to load profile\n" );
+        return 1;
+    }
+
     // Load images
     ImageBackground = LoadImage( Config.PathBackground );
     for (button_index=0; button_index<Config.PathButtons.size(); button_index++)
@@ -294,12 +340,28 @@ int8_t CSelector::OpenResources( void )
         ImageSelectPointer = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), ENTRY_ARROW, Config.Colors.at(COLOR_BLACK) );
     }
 
-    Log( "Loading profile.\n" );
-    if (Profile.Load( ProfilePath, Config.Delimiter ))
+    //      Title text
+    text = string(APPNAME) + " " + string(APPVERSION);
+    if (Profile.TargetApp.length() > 0)
     {
-        Log( "Failed to load profile\n" );
+        text += " for " + Profile.TargetApp;
+    }
+    ImageTitle = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_LARGE), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+    if (ImageTitle == NULL)
+    {
+        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
         return 1;
     }
+
+    //      About text
+    text = "Written by " + string(APPAUTHOR) + " " + string(APPCOPYRIGHT);
+    ImageAbout = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+    if (ImageAbout == NULL)
+    {
+        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+        return 1;
+    }
+
 
     return 0;
 }
@@ -346,36 +408,22 @@ void CSelector::CloseResources( int8_t result )
     }
 
     // Free images
-    if (ImageBackground != NULL)
-    {
-        SDL_FreeSurface( ImageBackground );
-        ImageBackground = NULL;
-    }
+    FREE_IMAGE( ImageBackground );
+    FREE_IMAGE( ImagePointer );
+    FREE_IMAGE( ImageSelectPointer );
+    FREE_IMAGE( ImagePreview );
+    FREE_IMAGE( ImageTitle );
+    FREE_IMAGE( ImageAbout );
+    FREE_IMAGE( ImageFilePath );
+    FREE_IMAGE( ImageFilter );
+    FREE_IMAGE( ImageIndex );
+    FREE_IMAGE( ImageZipMode );
+#if defined(DEBUG)
+    FREE_IMAGE( ImageDebug );
+#endif
     for (button_index=0; button_index<ImageButtons.size(); button_index++)
     {
-        if (ImageButtons.at(button_index) != NULL)
-        {
-            SDL_FreeSurface( ImageButtons.at(button_index) );
-            ImageButtons.at(button_index) = NULL;
-        }
-    }
-
-    if (ImagePointer != NULL)
-    {
-        SDL_FreeSurface( ImagePointer );
-        ImagePointer = NULL;
-    }
-
-    if (ImageSelectPointer != NULL)
-    {
-        SDL_FreeSurface( ImageSelectPointer );
-        ImageSelectPointer = NULL;
-    }
-
-    if (ImagePreview != NULL)
-    {
-        SDL_FreeSurface( ImagePreview );
-        ImagePreview = NULL;
+        FREE_IMAGE( ImageButtons.at(button_index) );
     }
 
     Log( "Quitting TTF.\n" );
@@ -411,7 +459,7 @@ int16_t CSelector::DisplayScreen( void )
         }
 
         // Update the screen
-        FlipScreen();
+        UpdateScreen();
     }
 
     if (IsEventOn( EVENT_QUIT ) == true)
@@ -427,39 +475,121 @@ int16_t CSelector::DisplayScreen( void )
     }
 }
 
-void CSelector::FlipScreen( void )
+void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
 {
+    if (Config.ScreenFlip == false)
+    {
+        // Safety Checks
+        if( x < 0 )
+        {
+            x = 0;
+            Log( "ERROR: UpdateRect X was out of bounds\n" );
+        }
+
+        if( y < 0 )
+        {
+            y = 0;
+            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+        }
+
+        if( h < 0 )
+        {
+            h = 0;
+            Log( "ERROR: UpdateRect X was out of bounds\n" );
+        }
+
+        if( w < 0 )
+        {
+            w = 0;
+            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+        }
+
+        if( x > Config.ScreenWidth )
+        {
+            x = Config.ScreenWidth-1;
+            Log( "ERROR: UpdateRect X was out of bounds\n" );
+        }
+
+        if( y > Config.ScreenHeight )
+        {
+            y = Config.ScreenHeight-1;
+            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+        }
+
+        if( x + w > Config.ScreenWidth )
+        {
+            w = Config.ScreenWidth-x;
+            Log( "ERROR: UpdateRect W was out of bounds\n" );
+        }
+
+        if( y + h > Config.ScreenHeight )
+        {
+            h = Config.ScreenHeight-y;
+            Log( "ERROR: UpdateRect H was out of bounds\n" );
+        }
+
+        ScreenRectsDirty.push_back( SDL_Rect{ x, y, w, h } );
+    }
+}
+
+void CSelector::UpdateScreen( void )
+{
+#if defined(DEBUG_REDRAW_FORCE)
+    Redraw = true;
+#endif
+
     if (SkipFrame == false && Redraw == true)
     {
-        if (SDL_Flip( Screen ) != 0)
+        if (Config.ScreenFlip == true)
         {
-            Log( "Failed to swap the buffers: %s\n", SDL_GetError() );
+            if (SDL_Flip( Screen ) != 0)
+            {
+                Log( "Failed to swap the buffers: %s\n", SDL_GetError() );
+            }
+        }
+        else
+        {
+            SDL_UpdateRects( Screen, ScreenRectsDirty.size(), &ScreenRectsDirty[0] );
         }
 
         Redraw = false;
-#if defined(DEBUG)
         FramesDrawn++;
     }
     else
     {
-        FramesSkipped++;
-#endif
+        if (SkipFrame == true)
+        {
+            FramesSkipped++;
+        }
+        else
+        {
+            FramesSleep++;
+        }
     }
+    ScreenRectsDirty.clear();
 
     FrameEndTime = SDL_GetTicks();
     FrameDelay   = (MS_PER_SEC/FRAMES_PER_SEC) - (FrameEndTime - FrameStartTime);
 
+#if defined(DEBUG)
+    LoopTimeAverage = (LoopTimeAverage + (FrameEndTime - FrameStartTime))/2;
+#endif
+
     if (FrameDelay < 0)
     {
-        SkipFrame = true;
+        if (FramesSkipped/FramesDrawn < FRAME_SKIP_RATIO)
+        {
+            SkipFrame = true;
+        }
+        else // Force a frame to be drawn
+        {
+            SkipFrame = false;
+        }
     }
     else
     {
         SkipFrame = false;
-        if (FrameDelay < MS_PER_SEC)
-        {
-            SDL_Delay( FrameDelay );
-        }
+        SDL_Delay( MIN(FrameDelay, MS_PER_SEC) );
     }
     FrameStartTime = SDL_GetTicks();
 
@@ -469,8 +599,14 @@ void CSelector::FlipScreen( void )
         FrameCountTime  = FrameStartTime;
         FPSDrawn        = FramesDrawn;
         FPSSkip         = FramesSkipped;
-        FramesDrawn     = 0;
+        FPSSleep        = FramesSleep;
+        FramesDrawn     = 1;
         FramesSkipped   = 0;
+        FramesSleep     = 0;
+
+        cout << "DEBUG total " << i_to_a(FPSDrawn+FPSSkip+FPSSleep)
+             << " fps " << i_to_a(FPSDrawn) << " skip " << i_to_a(FPSSkip) << " slp " << i_to_a(FPSSleep)
+             << " loop " << i_to_a(LoopTimeAverage) << endl;
     }
 #endif
 }
@@ -534,8 +670,9 @@ void CSelector::SelectMode( void )
 
     if (Mode != old_mode)
     {
-        Rescan      = true;
-        RefreshList = true;
+        DrawState_ButtonL  = true;
+        DrawState_ButtonR  = true;
+        Rescan = true;
     }
 }
 
@@ -546,18 +683,50 @@ int8_t CSelector::DisplaySelector( void )
     if (Rescan)
     {
         RescanItems();
-        Rescan = false;
+        RefreshList = true;
+        Rescan      = false;
     }
 
     if (RefreshList)
     {
         PopulateList();
-        RefreshList = false;
-        Redraw      = true;
+        DrawState_Index = true;
+        Redraw          = true;
+        RefreshList     = false;
     }
 
     if (Redraw == true || CurScrollPause != 0 || CurScrollSpeed != 0 || TextScrollOffset != 0)
     {
+        if (Config.ScreenFlip == true)
+        {
+            DrawState_Title     = true;
+            DrawState_About     = true;
+            DrawState_Filter    = true;
+            DrawState_FilePath  = true;
+            DrawState_Index     = true;
+            DrawState_ZipMode   = true;
+            DrawState_Preview   = true;
+            DrawState_ButtonL   = true;
+            DrawState_ButtonR   = true;
+        }
+#if defined(DEBUG)
+/*
+        else
+        {
+            cout << "DEBUG "
+                 << " " << i_to_a(DrawState_Title)
+                 << " " << i_to_a(DrawState_About)
+                 << " " << i_to_a(DrawState_Filter)
+                 << " " << i_to_a(DrawState_FilePath)
+                 << " " << i_to_a(DrawState_Index)
+                 << " " << i_to_a(DrawState_ZipMode)
+                 << " " << i_to_a(DrawState_Preview)
+                 << " " << i_to_a(DrawState_ButtonL)
+                 << " " << i_to_a(DrawState_ButtonR) << endl;
+        }
+*/
+#endif
+
         // Draw background or clear screen
         DrawBackground();
 
@@ -598,8 +767,8 @@ void CSelector::DirectoryUp( void )
             Profile.FilePath.erase( Profile.FilePath.length()-1 );
         }
         Profile.FilePath = Profile.FilePath.substr( 0, Profile.FilePath.find_last_of('/', Profile.FilePath.length()-1) ) + '/';
-        Rescan      = true;
-        RefreshList = true;
+        DrawState_FilePath  = true;
+        Rescan              = true;
     }
     else
     {
@@ -609,41 +778,38 @@ void CSelector::DirectoryUp( void )
 
 void CSelector::DirectoryDown( void )
 {
-    if (ItemsEntry.size()>0)
+    if (DisplayList.at(MODE_SELECT_ENTRY).absolute < (int16_t)ItemsEntry.size() )
     {
-        if (DisplayList.at(MODE_SELECT_ENTRY).absolute < (int16_t)ItemsEntry.size() )
+        if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_DIR )
         {
-            if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_DIR )
-            {
-                Profile.FilePath += ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Name + '/';
-                Rescan      = true;
-                RefreshList = true;
+            Profile.FilePath += ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Name + '/';
+            DrawState_FilePath  = true;
+            Rescan              = true;
 
-                EventPressCount.at(EVENT_SELECT) = EVENT_LOOPS_OFF;
-            }
-        }
-        else
-        {
-            Log( "Error: Item index of %d too large for size of scanitems %d\n", DisplayList.at(MODE_SELECT_ENTRY).absolute, ItemsEntry.size() );
+            EventPressCount.at(EVENT_SELECT) = EVENT_LOOPS_OFF;
         }
     }
     else
     {
-        EventPressCount.at( EVENT_SELECT ) = EVENT_LOOPS_OFF;
+        Log( "Error: Item index of %d too large for size of scanitems %d\n", DisplayList.at(MODE_SELECT_ENTRY).absolute, ItemsEntry.size() );
     }
 }
 
 void CSelector::ZipUp( void )
 {
-    Rescan = true;
-    RefreshList = true;
-    Profile.ZipFile = "";
+    DrawState_FilePath  = true;
+    DrawState_ZipMode   = true;
+    DrawState_ButtonL   = true;
+    Rescan              = true;
+    Profile.ZipFile     = "";
 }
 
 void CSelector::ZipDown( void )
 {
-    Rescan = true;
-    RefreshList = true;
+    DrawState_FilePath  = true;
+    DrawState_ZipMode   = true;
+    DrawState_ButtonL   = true;
+    Rescan              = true;
     Profile.ZipFile = ItemsEntry.at(DisplayList.at(Mode).absolute).Name;
     EventPressCount.at( EVENT_SELECT ) = EVENT_LOOPS_OFF;
 }
@@ -686,11 +852,11 @@ void CSelector::RescanItems( void )
     }
     ListNames.resize( RectEntries.size() );
 
-    DisplayList.at( Mode ).absolute  = 0;
-    DisplayList.at( Mode ).relative  = 0;
-    DisplayList.at( Mode ).first     = 0;
-    DisplayList.at( Mode ).last      = 0;
-    DisplayList.at( Mode ).total     = total;
+    DisplayList.at(Mode).absolute  = 0;
+    DisplayList.at(Mode).relative  = 0;
+    DisplayList.at(Mode).first     = 0;
+    DisplayList.at(Mode).last      = 0;
+    DisplayList.at(Mode).total     = total;
 }
 
 void CSelector::PopulateList( void )
@@ -747,9 +913,7 @@ void CSelector::PopModeEntry( void )
             if (index == DisplayList.at(Mode).absolute)
             {
                 ListNames.at(i).font = FONT_SIZE_LARGE;
-
-                // Load preview
-                LoadPreview( ListNames.at(i).text );
+                LoadPreview( ListNames.at(i).text );        // Load preview
             }
             else
             {
@@ -924,22 +1088,25 @@ void CSelector::LoadPreview( const string& name )
 
     if (ImagePreview != NULL)
     {
-        SDL_FreeSurface( ImagePreview );
-        ImagePreview = NULL;
+        DrawState_Preview = true;
     }
+
+    FREE_IMAGE( ImagePreview );
 
     filename = Config.PreviewsPath + "/" + name.substr( 0, name.find_last_of(".")) + ".png";
     preview = LoadImage( filename.c_str() );
     if (preview != NULL)
     {
         ImagePreview = ScaleSurface( preview, Config.PreviewWidth, Config.PreviewHeight );
-        SDL_FreeSurface( preview );
+        FREE_IMAGE( preview );
+        DrawState_Preview = true;
     }
 }
 
 int8_t CSelector::DrawNames( SDL_Rect& location )
 {
     uint16_t entry_index;
+    uint16_t startx, starty;
     int16_t offset;
     SDL_Rect rect_clip;
     SDL_Surface* text_surface = NULL;
@@ -947,8 +1114,11 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
     if (Config.AutoLayout == false)
     {
         location.x = Config.PosX_ListNames;
-        location.y = Config.PosX_ListNames;
+        location.y = Config.PosY_ListNames;
     }
+
+    startx = location.x;
+    starty = location.y;
 
     if (ListNames.size() <= 0)
     {
@@ -966,18 +1136,18 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
         {
             location.x += ImageSelectPointer->w;
 
-            rect_clip.w = Config.DisplayListMaxWidth-location.x;
-            rect_clip.h = text_surface->h;
             rect_clip.x = 0;
             rect_clip.y = 0;
+            rect_clip.w = Config.DisplayListMaxWidth-location.x;
+            rect_clip.h = text_surface->h;
 
-            ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
+            ApplyImage( location.x, location.y, text_surface, Screen, &rect_clip );
 
+            ListNameHeight = MAX(ListNameHeight, location.y+text_surface->h );
             location.x -= ImageSelectPointer->w;
             location.y += text_surface->h + Config.EntryYDelta;
 
-            SDL_FreeSurface( text_surface );
-            text_surface = NULL;
+            FREE_IMAGE( text_surface );
         }
         else
         {
@@ -1071,11 +1241,11 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
 
                 ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
 
+                ListNameHeight = MAX(ListNameHeight, location.y+text_surface->h );
                 location.x -= ImageSelectPointer->w;
                 location.y += text_surface->h + Config.EntryYDelta;
 
-                SDL_FreeSurface( text_surface );
-                text_surface = NULL;
+                FREE_IMAGE( text_surface );
             }
             else
             {
@@ -1084,6 +1254,8 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
             }
         }
     }
+
+    UpdateRect( startx, starty, Config.DisplayListMaxWidth-startx, ListNameHeight-starty );
 
     return 0;
 }
@@ -1227,7 +1399,6 @@ int8_t CSelector::ConfigureButtons( void )
         }
     }
 
-
     return 0;
 }
 
@@ -1243,27 +1414,32 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
     }
 
     // Draw buttons on left
-    for (button=0; button<BUTTONS_MAX_LEFT; button++)
+    if (DrawState_ButtonL == true)
     {
-        if (ButtonModesLeft.at(button) != EVENT_NONE)
+        for (button=0; button<BUTTONS_MAX_LEFT; button++)
         {
             RectButtonsLeft.at(button).x = location.x;
             RectButtonsLeft.at(button).y = location.y+(Config.ButtonHeightLeft*button)+(Config.EntryYOffset*button);
             RectButtonsLeft.at(button).w = Config.ButtonWidthLeft;
             RectButtonsLeft.at(button).h = Config.ButtonHeightLeft;
 
-            if (DrawButton( ButtonModesLeft.at(button), Fonts.at(FONT_SIZE_LARGE), RectButtonsLeft.at(button) ))
+            if (ButtonModesLeft.at(button) != EVENT_NONE)
             {
-                return 1;
+                if (DrawButton( ButtonModesLeft.at(button), Fonts.at(FONT_SIZE_LARGE), RectButtonsLeft.at(button) ))
+                {
+                    return 1;
+                }
             }
+            UpdateRect( RectButtonsLeft.at(button).x, RectButtonsLeft.at(button).y, RectButtonsLeft.at(button).w, RectButtonsLeft.at(button).h );
         }
+        DrawState_ButtonL = false;
     }
     location.x += Config.ButtonWidthLeft + Config.EntryXOffset;
 
     // Draw buttons on right
-    for (button=0; button<BUTTONS_MAX_RIGHT; button++)
+    if (DrawState_ButtonR == true)
     {
-        if (ButtonModesRight.at(button) != EVENT_NONE)
+        for (button=0; button<BUTTONS_MAX_RIGHT; button++)
         {
             if (Config.AutoLayout == false)
             {
@@ -1278,22 +1454,30 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
             RectButtonsRight.at(button).w = Config.ButtonWidthRight;
             RectButtonsRight.at(button).h = Config.ButtonHeightRight;
 
-            if (DrawButton( ButtonModesRight.at(button), Fonts.at(FONT_SIZE_LARGE), RectButtonsRight.at(button) ))
+            if (ButtonModesRight.at(button) != EVENT_NONE)
             {
-                return 1;
+                if (DrawButton( ButtonModesRight.at(button), Fonts.at(FONT_SIZE_LARGE), RectButtonsRight.at(button) ))
+                {
+                    return 1;
+                }
             }
+            UpdateRect( RectButtonsRight.at(button).x, RectButtonsRight.at(button).y, RectButtonsRight.at(button).w, RectButtonsRight.at(button).h );
         }
+        DrawState_ButtonR = false;
     }
 
     //Display the preview graphic
-    if (Mode == MODE_SELECT_ENTRY && ImagePreview != NULL)
+    if (Mode == MODE_SELECT_ENTRY && DrawState_Preview == true)
     {
         preview.x = Config.ScreenWidth-Config.PreviewWidth-Config.EntryXOffset;
         preview.y = Config.ScreenHeight-Config.PreviewHeight-(Config.ButtonHeightRight*3)-(Config.EntryYOffset*6);
-        //preview.w = Config.PreviewWidth;
-        //preview.h = Config.PreviewHeight;
 
-        ApplyImage( preview.x, preview.y, ImagePreview, Screen, NULL );
+        if (ImagePreview != NULL)
+        {
+            ApplyImage( preview.x, preview.y, ImagePreview, Screen, NULL );
+        }
+        UpdateRect( preview.x, preview.y, Config.PreviewWidth, Config.PreviewHeight );
+        DrawState_Preview = false;
     }
 
     return 0;
@@ -1313,6 +1497,7 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
         SDL_FillRect( Screen, &location, rgb_to_int(Config.Colors.at(Config.ColorButton)) );
     }
 
+
     if (Config.ShowLabels == true)
     {
         text_surface = TTF_RenderText_Solid( font, LabelButtons.at(button).c_str(), Config.Colors.at(Config.ColorFontButton) );
@@ -1323,8 +1508,8 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
         if (text_surface != NULL)
         {
             ApplyImage( rect_text.x, rect_text.y, text_surface, Screen, NULL );
-            SDL_FreeSurface( text_surface );
-            text_surface = NULL;
+
+            FREE_IMAGE( text_surface );
         }
         else
         {
@@ -1338,9 +1523,10 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
 int8_t CSelector::DrawText( SDL_Rect& location )
 {
     int16_t         total;
+    int16_t         prev_width;
+    int16_t         prev_height;
     string          text;
     SDL_Rect        box, clip;
-    SDL_Surface*    text_surface = NULL;
 
     if (Config.AutoLayout == false)
     {
@@ -1349,110 +1535,127 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     }
 
     // Title text
-    text = string(APPNAME) + " " + string(APPVERSION);
-    if (Profile.TargetApp.length() > 0)
+    if (ImageTitle != NULL)
     {
-        text += " for " + Profile.TargetApp;
-    }
-
-    text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_LARGE), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
-    if (text_surface != NULL)
-    {
-        ApplyImage( location.x, location.y, text_surface, Screen, NULL );
-        location.y += text_surface->h + Config.EntryYDelta;
-
-        SDL_FreeSurface( text_surface );
-        text_surface = NULL;
-    }
-    else
-    {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
-        return 1;
+        if (DrawState_Title == true)
+        {
+            ApplyImage( location.x, location.y, ImageTitle, Screen, NULL );
+            UpdateRect( location.x, location.y, ImageTitle->w, ImageTitle->h );
+            DrawState_Title = false;
+        }
+        location.y += ImageTitle->h + Config.EntryYDelta;
     }
 
     // Entry Filter
-    if (Mode == MODE_SELECT_ENTRY && Profile.EntryFilter.length() > 0)
+    if (DrawState_Filter == true )
     {
-        text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), Profile.EntryFilter.c_str(), Config.Colors.at(Config.ColorFontFiles) );
-        if (text_surface != NULL)
+        if (Mode == MODE_SELECT_ENTRY && Profile.EntryFilter.length() > 0)
         {
-            clip.x = 0;
-            clip.y = 0;
-            clip.h = text_surface->h;
-            clip.w = Config.FilePathMaxWidth;
-            if (text_surface->w > Config.FilePathMaxWidth)
+            if (ImageFilter != NULL)
             {
-                clip.x = text_surface->w-Config.FilePathMaxWidth;
+                prev_width  = ImageFilter->w;
+                prev_height = ImageFilter->h;
+            }
+            else
+            {
+                prev_width  = 0;
+                prev_height = 0;
             }
 
-            location.x = Config.ScreenWidth - text_surface->w - Config.EntryXOffset;
+            FREE_IMAGE( ImageFilter );
 
-            ApplyImage( location.x, location.y, text_surface, Screen, &clip );
+            ImageFilter = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), Profile.EntryFilter.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+            if (ImageFilter != NULL)
+            {
+                clip.x = 0;
+                clip.y = 0;
+                clip.w = Config.FilePathMaxWidth;
+                clip.h = ImageFilter->h;
+                if (ImageFilter->w > Config.FilePathMaxWidth)
+                {
+                    clip.x = ImageFilter->w-Config.FilePathMaxWidth;
+                }
 
-            location.x = Config.EntryXOffset;
+                location.x = Config.ScreenWidth - ImageFilter->w - Config.EntryXOffset;
 
-            SDL_FreeSurface( text_surface );
-            text_surface = NULL;
+                ApplyImage( location.x, location.y, ImageFilter, Screen, &clip );
+                UpdateRect( location.x, location.y, MAX(ImageFilter->w, prev_width), MAX(ImageFilter->h,prev_height) );
+            }
+            else
+            {
+                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                return 1;
+            }
         }
-        else
-        {
-            Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
-            return 1;
-        }
+        DrawState_Filter = false;
     }
+    location.x = Config.EntryXOffset;
+
 
     // File path
     if (Mode == MODE_SELECT_ENTRY)
     {
-        text = Profile.FilePath;
-        if (Profile.ZipFile.length())
+        if (DrawState_FilePath == true)
         {
-            text += "->" + Profile.ZipFile;
-        }
-
-        text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
-        if (text_surface != NULL)
-        {
-            clip.x = 0;
-            clip.y = 0;
-            clip.h = text_surface->h;
-            clip.w = Config.FilePathMaxWidth;
-            if (text_surface->w > Config.FilePathMaxWidth)
+            if (ImageFilePath != NULL)
             {
-                clip.x = text_surface->w-Config.FilePathMaxWidth;
+                prev_width  = ImageFilePath->w;
+                prev_height = ImageFilePath->h;
+            }
+            else
+            {
+                prev_width  = 0;
+                prev_height = 0;
             }
 
-            ApplyImage( location.x, location.y, text_surface, Screen, &clip );
+            FREE_IMAGE(ImageFilePath);
 
-            location.y += text_surface->h + Config.EntryYOffset;
+            text = Profile.FilePath;
+            if (Profile.ZipFile.length())
+            {
+                text += "->" + Profile.ZipFile;
+            }
 
-            SDL_FreeSurface( text_surface );
-            text_surface = NULL;
+            ImageFilePath = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+            if (ImageFilePath != NULL)
+            {
+                clip.x = 0;
+                clip.y = 0;
+                clip.w = Config.FilePathMaxWidth;
+                clip.h = ImageFilePath->h;
+
+                if (ImageFilePath->w > Config.FilePathMaxWidth)
+                {
+                    clip.x = ImageFilePath->w-Config.FilePathMaxWidth;
+                }
+
+                ApplyImage( location.x, location.y, ImageFilePath, Screen, &clip );
+                UpdateRect( location.x, location.y, MAX(ImageFilePath->w, prev_width), MAX(ImageFilePath->h, prev_height) );
+            }
+            else
+            {
+                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                return 1;
+            }
+            DrawState_FilePath = false;
         }
-        else
-        {
-            Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
-            return 1;
-        }
+    }
+    if (ImageFilePath != NULL)
+    {
+        location.y += ImageFilePath->h + Config.EntryYOffset;
     }
 
     // About text
-    text = "Written by " + string(APPAUTHOR) + " " + string(APPCOPYRIGHT);
-    text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
-
-    if (text_surface != NULL)
+    if (ImageAbout != NULL)
     {
-        box.x = Config.ScreenWidth  - text_surface->w - Config.EntryXOffset;
-        box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
-
-        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
-        SDL_FreeSurface( text_surface );
-        text_surface = NULL;
-    }
-    else
-    {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
-        return 1;
+        if (DrawState_About == true)
+        {
+            box.x = Config.ScreenWidth  - ImageAbout->w - Config.EntryXOffset;
+            box.y = Config.ScreenHeight - ImageAbout->h - Config.EntryYOffset;
+            ApplyImage( box.x, box.y, ImageAbout, Screen, NULL );
+            UpdateRect( box.x, box.y, ImageAbout->w, ImageAbout->h );
+            DrawState_About = false;
+        }
     }
 
     // Item count
@@ -1475,74 +1678,122 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     }
 
     // Draw index
-    text = "0 of 0";
-    if (total > 0)
+    if (DrawState_Index == true)
     {
-        text = i_to_a(DisplayList.at(Mode).absolute+1) + " of " + i_to_a(total);
-    }
-    text_surface = TTF_RenderText_Solid(Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles));
-
-    if (text_surface != NULL)
-    {
-        box.x = Config.EntryXOffset;
-        box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
-
-        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
-        SDL_FreeSurface( text_surface );
-        text_surface = NULL;
-    }
-    else
-    {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError());
-        return 1;
-    }
-
-    // Zip extract option
-    if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
-    {
-        if (ExtractAllFiles == true)
+        if (ImageIndex != NULL)
         {
-            text = "Extract All";
+            prev_width  = ImageIndex->w;
+            prev_height = ImageIndex->h;
         }
         else
         {
-            text = "Extract Selection";
+            prev_width  = 0;
+            prev_height = 0;
         }
 
-        text_surface = TTF_RenderText_Solid(Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles));
+        FREE_IMAGE( ImageIndex );
 
-        if (text_surface != NULL)
+        text = "0 of 0";
+        if (total > 0)
         {
-            box.x = 5*Config.EntryXOffset;
-            box.y = Config.ScreenHeight - text_surface->h - Config.EntryYOffset;
+            text = i_to_a(DisplayList.at(Mode).absolute+1) + " of " + i_to_a(total);
+        }
+        ImageIndex = TTF_RenderText_Solid(Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles));
 
-            ApplyImage( box.x, box.y, text_surface, Screen, NULL );
-            SDL_FreeSurface( text_surface );
-            text_surface = NULL;
+        if (ImageIndex != NULL)
+        {
+            box.x = Config.EntryXOffset;
+            box.y = Config.ScreenHeight - ImageIndex->h - Config.EntryYOffset;
+
+            ApplyImage( box.x, box.y, ImageIndex, Screen, NULL );
+            UpdateRect( box.x, box.y, MAX(ImageIndex->w, prev_width), MAX(ImageIndex->h, prev_height) );
         }
         else
         {
             Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError());
             return 1;
         }
+        DrawState_Index = false;
+    }
+
+    // Zip extract option
+    if (DrawState_ZipMode == true)
+    {
+        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+        {
+            if (ImageZipMode != NULL)
+            {
+                prev_width  = ImageZipMode->w;
+                prev_height = ImageZipMode->h;
+            }
+            else
+            {
+                prev_width  = 0;
+                prev_height = 0;
+            }
+
+            FREE_IMAGE( ImageZipMode );
+
+            if (ExtractAllFiles == true)
+            {
+                text = "Extract All";
+            }
+            else
+            {
+                text = "Extract Selection";
+            }
+
+            ImageZipMode = TTF_RenderText_Solid(Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles));
+            if (ImageZipMode == NULL)
+            {
+                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError());
+                return 1;
+            }
+        }
+
+        if (ImageZipMode != NULL)
+        {
+            box.x = 5*Config.EntryXOffset;
+            box.y = Config.ScreenHeight - ImageZipMode->h - Config.EntryYOffset;
+
+            if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+            {
+                ApplyImage( box.x, box.y, ImageZipMode, Screen, NULL );
+            }
+            UpdateRect( box.x, box.y, MAX(ImageZipMode->w, prev_width), MAX(ImageZipMode->h, prev_height) );
+        }
+        DrawState_ZipMode = false;
     }
 
 #if defined(DEBUG)
+    if (ImageDebug != NULL)
+    {
+        prev_width  = ImageDebug->w;
+        prev_height = ImageDebug->h;
+    }
+    else
+    {
+        prev_width  = 0;
+        prev_height = 0;
+    }
+
+    FREE_IMAGE( ImageDebug );
+
     text = "DEBUG abs " + i_to_a(DisplayList.at(Mode).absolute)  + " rel " + i_to_a(DisplayList.at(Mode).relative)
-         + " 1st " + i_to_a(DisplayList.at(Mode).first) + " end " + i_to_a(DisplayList.at(Mode).last)
-         + " tot " + i_to_a(DisplayList.at(Mode).total)
-         + " fps " + i_to_a(FPSDrawn) + " skip " + i_to_a(FPSSkip);
+         + " F " + i_to_a(DisplayList.at(Mode).first) + " L " + i_to_a(DisplayList.at(Mode).last)
+         + " T " + i_to_a(DisplayList.at(Mode).total)
+         + " fps " + i_to_a(FPSDrawn) + " skp " + i_to_a(FPSSkip) + " slp " + i_to_a(FPSSleep)
+         + " lp " + i_to_a(LoopTimeAverage);
 
-    text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+    ImageDebug = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
 
-    if (text_surface != NULL)
+    if (ImageDebug != NULL)
     {
         box.x = Config.EntryXOffset;
-        box.y = Config.ScreenHeight - text_surface->h;
+        box.y = Config.ScreenHeight - ImageDebug->h;
 
-        ApplyImage( box.x, box.y, text_surface, Screen, NULL );
-        SDL_FreeSurface( text_surface );
-        text_surface = NULL;
+        ApplyImage( box.x, box.y, ImageDebug, Screen, NULL );
+        UpdateRect( box.x, box.y, MAX(ImageDebug->w, prev_width), MAX(ImageDebug->h, prev_height) );
     }
     else
     {
@@ -1826,10 +2077,9 @@ int8_t CSelector::PollInputs( void )
                         {
                             Profile.EntryFilter += keyname;
                         }
-                        Rescan = true;
+                        DrawState_Filter    = true;
+                        Rescan              = true;
                     }
-
-                    RefreshList = true;
                 }
                 else
                 {
@@ -1952,15 +2202,13 @@ int8_t CSelector::PollInputs( void )
                         // Only need to refresh the names when a new entry is hovered
                         if (newsel != DisplayList.at(Mode).absolute)
                         {
+                            DisplayList.at(Mode).absolute = newsel;
+                            DisplayList.at(Mode).relative = index;
                             RefreshList = true;
                         }
-                        DisplayList.at(Mode).absolute = newsel;
-                        DisplayList.at(Mode).relative = index;
                         break;
                     }
                 }
-
-                Redraw = true;
                 break;
 
             case SDL_MOUSEBUTTONDOWN:
@@ -2084,7 +2332,7 @@ int8_t CSelector::PollInputs( void )
         // Go down into a dir
         if (Rescan == false && ((IsEventOn(EVENT_DIR_DOWN) == true) || (IsEventOn(EVENT_SELECT) == true)))
         {
-            if (CheckRange( DisplayList.at(Mode).absolute, ItemsEntry.size() ))
+            if (ItemsEntry.size()>0)
             {
                 if (ItemsEntry.at(DisplayList.at(Mode).absolute).Type == TYPE_DIR)
                 {
@@ -2100,8 +2348,7 @@ int8_t CSelector::PollInputs( void )
             }
             else
             {
-                Log( "Error: PollInputs DisplayList.at(Mode).absolute out of range\n" );
-                return 1;
+                EventPressCount.at( EVENT_SELECT ) = EVENT_LOOPS_OFF;
             }
         }
     }
@@ -2113,18 +2360,20 @@ int8_t CSelector::PollInputs( void )
         SetAllEntryValue = false;
         if (IsEventOn(EVENT_SET_ONE) == true)
         {
-            RefreshList = true;
-            SetOneEntryValue = true;
+            RefreshList         = true;
+            SetOneEntryValue    = true;
         }
         if (IsEventOn(EVENT_SET_ALL) == true)
         {
-            RefreshList = true;
-            SetAllEntryValue = true;
+            RefreshList         = true;
+            SetAllEntryValue    = true;
         }
     }
 
     if (IsEventOn(EVENT_ZIP_MODE) == true)
     {
+        Redraw              = true;
+        DrawState_ZipMode   = true;
         ExtractAllFiles = !ExtractAllFiles;
     }
 

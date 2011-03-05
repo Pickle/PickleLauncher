@@ -23,11 +23,13 @@
 #include "cconfig.h"
 
 CConfig::CConfig() : CBase(),
+        ResetGUI                (false),
 #if defined(DEBUG)
         Fullscreen              (false),
 #else
         Fullscreen              (true),
 #endif
+        ScreenFlip              (false),
         UseZipSupport           (true),
         ShowExts                (true),
         ShowHidden              (false),
@@ -76,8 +78,8 @@ CConfig::CConfig() : CBase(),
         PosY_ButtonRight        (0),
         PosX_ListNames          (0),
         PosY_ListNames          (0),
-        ScreenRatioW            ((float)SCREEN_WIDTH/(float)BASE_WIDTH),
-        ScreenRatioH            ((float)SCREEN_HEIGHT/(float)BASE_HEIGHT),
+        ScreenRatioW            ((float)ScreenWidth/(float)BASE_WIDTH),
+        ScreenRatioH            ((float)ScreenHeight/(float)BASE_HEIGHT),
         ZipPath                 ("ziptemp"),
         PreviewsPath            ("previews"),
         PathFont                ("DejaVuSansMono-Bold.ttf"),
@@ -93,6 +95,15 @@ CConfig::CConfig() : CBase(),
         FontSizes               (),
         Colors                  (),
         ColorNames              ()
+{
+    SetDefaults();
+}
+
+CConfig::~CConfig()
+{
+}
+
+void CConfig::SetDefaults( void )
 {
     ButtonModesLeftEnable.resize(  BUTTONS_MAX_LEFT,  true );
     ButtonModesRightEnable.resize( BUTTONS_MAX_RIGHT, true );
@@ -172,10 +183,6 @@ CConfig::CConfig() : CBase(),
     PreviewHeight       = PREVIEW_H;
     DisplayListMaxWidth = ENTRY_MAX_W;
     FilePathMaxWidth    = FILEPATH_MAX_W;
-}
-
-CConfig::~CConfig()
-{
 }
 
 #define LOAD_INT(X,Y)  if (UnprefixString( line, line, X ) == true) { Y = a_to_i(line); }
@@ -326,6 +333,11 @@ int8_t CConfig::Load( const string& location )
 
     ScreenRatioW = (float)ScreenWidth/(float)BASE_WIDTH;
     ScreenRatioH = (float)ScreenHeight/(float)BASE_HEIGHT;
+
+    if (ResetGUI == true)
+    {
+        SetDefaults();
+    }
 
     return 0;
 }

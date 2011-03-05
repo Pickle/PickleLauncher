@@ -118,7 +118,7 @@ SDL_Surface* CBase::LoadImage( const string& filename )
     }
     else
     {
-  		Log( "LoadImage -> Could not load image: %s at path='%s'\n", IMG_GetError(), filename.c_str() );
+  		//Log( "LoadImage -> Could not load image: %s at path='%s'\n", IMG_GetError(), filename.c_str() );
   		return NULL;
     }
 

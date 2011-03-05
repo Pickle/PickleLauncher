@@ -30,6 +30,7 @@
 
 using namespace std;
 
+#define ARG_RESETGUI    "--resetgui"                            /** Flag to reset GUI settings based on the current resolution. */
 #define ARG_CONFIG      "--config"                              /** Flag to override the config file. */
 #define DEF_CONFIG      "config.txt"                            /** Default config filename. */
 #define ARG_PROFILE     "--profile"                             /** Flag to override the profile file. */
@@ -37,7 +38,7 @@ using namespace std;
 #define ARG_ZIPLIST     "--ziplist"                             /** Flag to override the ziplist file. */
 #define DEF_ZIPLIST     "ziplist.txt"                           /** Default ziplist filename. */
 
-#define ENTRY_ARROW             "-> "                            /** Ascii fallback for the entry arrow selector. */
+#define ENTRY_ARROW             "-> "                           /** Ascii fallback for the entry arrow selector. */
 #define BUTTON_LABEL_ONE_UP     "<"                             /** Ascii text fallback for the one up button label. */
 #define BUTTON_LABEL_ONE_DOWN   ">"                             /** Ascii text fallback for the one down button label. */
 #define BUTTON_LABEL_PAGE_UP    "<<"                            /** Ascii text fallback for the page up button label. */
@@ -62,8 +63,11 @@ using namespace std;
 #define IsEventOn(x)    ((EventPressCount.at(x) <= EVENT_LOOPS_ON) ? true : false)  /** Determines if an event is active. */
 #define IsEventOff(x)   ((EventPressCount.at(x) == EVENT_LOOPS_OFF) ? true : false) /** Determines if an event is inactive. */
 
-#define MS_PER_SEC      1000                                    /** Milliseconds in 1 Second. */
-#define FRAMES_PER_SEC  60                                      /** Frames in 1 Second. */
+#define MS_PER_SEC          1000                                /** Milliseconds in 1 Second. */
+#define FRAMES_PER_SEC      60                                  /** Frames in 1 Second. */
+#define FRAME_SKIP_RATIO    4                                   /** Maximum frames skip ratio, draw 1 frame for every X number of skipped frames. */
+
+#define FREE_IMAGE(X)   if (X != NULL) { SDL_FreeSurface(X); X = NULL; }
 
 /** @brief Modes of the launcher.
  */
@@ -135,9 +139,13 @@ class CSelector : public CBase
          */
         int16_t DisplayScreen       ( void );
 
+        /** @brief Check which screen rects a rect overlaps. The marked screen rects will only be updated for the screen.
+         */
+        void    UpdateRect          ( int16_t x, int16_t y, int16_t w, int16_t h );
+
         /** @brief Handles logic for measuring and counting frame drawing to the screen.
          */
-        void    FlipScreen          ( void );
+        void    UpdateScreen        ( void );
 
         /** @brief Determines the mode to run based on user input events.
          */
@@ -252,20 +260,35 @@ class CSelector : public CBase
         bool                    SetAllEntryValue;   /**< Set default for all entries to the selected value. */
         bool                    TextScrollDir;      /**< Determines the direction of the horizontal scroll, left or right. */
         bool                    ExtractAllFiles;    /**< True if all files should be extracted from a zip, if false only the selected file is. */
+
+        bool                    DrawState_Title;
+        bool                    DrawState_About;
+        bool                    DrawState_Filter;
+        bool                    DrawState_FilePath;
+        bool                    DrawState_Index;
+        bool                    DrawState_ZipMode;
+        bool                    DrawState_Preview;
+        bool                    DrawState_ButtonL;
+        bool                    DrawState_ButtonR;
+
         uint8_t                 Mode;               /**< The current mode of the application. */
         uint8_t                 LastSelectedEntry;  /**< Stores the index of the last seclected entry so scrolling can be restarted. */
         uint16_t                TextScrollOffset;   /**< Number of pixels to offset the entry text surface when it will blit to the screen. */
         uint16_t                CurScrollSpeed;     /**< Current number of loops used to decide when to offset the entry text scroll effect. */
         uint16_t                CurScrollPause;     /**< Current number of loops used to decide when to pause the entry text scroll effect. */
+        uint16_t                ListNameHeight;
+        int16_t                 FramesDrawn;        /**< Counter for the number frames drawn to the screen. */
+        int16_t                 FramesSkipped;      /**< Counter for the number frames not drawn to the screen. */
+        int16_t                 FramesSleep;
 #if defined(DEBUG)
-        uint16_t                FramesDrawn;        /**< Counter for the number frames drawn to the screen. */
-        uint16_t                FramesSkipped;      /**< Counter for the number frames not drawn to the screen. */
-        uint16_t                FPSDrawn;           /**< Number frames drawn to the screen per second. */
-        uint16_t                FPSSkip;            /**< Number frames not drawn to the screen per second. */
-        uint16_t                FrameCountTime;     /**< Tick count from measureing FPS. */
+        int16_t                 FPSDrawn;           /**< Number frames drawn to the screen per second. */
+        int16_t                 FPSSkip;            /**< Number frames not drawn to the screen per second. */
+        int16_t                 FPSSleep;
+        int32_t                 FrameCountTime;     /**< Tick count from measureing FPS. */
+        int16_t                 LoopTimeAverage;    /**< Average loop time. */
 #endif
-        uint16_t                FrameEndTime;       /**< Tick count at the end of the frame. */
-        uint16_t                FrameStartTime;     /**< Tick count at the start of the frame. */
+        int32_t                 FrameEndTime;       /**< Tick count at the end of the frame. */
+        int32_t                 FrameStartTime;     /**< Tick count at the start of the frame. */
         int16_t                 FrameDelay;         /**< Tick duration of the frame. */
         SDL_Rect                Mouse;              /**< Stores the absolute position of the mouse pointer. */
         SDL_Joystick*           Joystick;           /**< SDL surface reference to the first joystick device. */
@@ -274,6 +297,15 @@ class CSelector : public CBase
         SDL_Surface*            ImagePointer;       /**< SDL surface reference to the pointer pixel data (optional). */
         SDL_Surface*            ImageSelectPointer; /**< SDL surface reference to the list select pointer pixel data (optional). */
         SDL_Surface*            ImagePreview;       /**< SDL surface reference to the preview pixel data. */
+        SDL_Surface*            ImageTitle;         /**< SDL surface reference to the title text pixel data. */
+        SDL_Surface*            ImageAbout;         /**< SDL surface reference to the about text pixel data. */
+        SDL_Surface*            ImageFilePath;      /**< SDL surface reference to the about text pixel data. */
+        SDL_Surface*            ImageFilter;        /**< SDL surface reference to the about text pixel data. */
+        SDL_Surface*            ImageIndex;         /**< SDL surface reference to the about text pixel data. */
+        SDL_Surface*            ImageZipMode;       /**< SDL surface reference to the about text pixel data. */
+#if defined(DEBUG)
+        SDL_Surface*            ImageDebug;         /**< SDL surface reference to the about text pixel data. */
+#endif
         vector<SDL_Surface*>    ImageButtons;       /**< SDL surface references to the button's pixel data (optional). */
         vector<TTF_Font*>       Fonts;              /**< SDL-TTF references to the rendered font in different size. */
         CConfig                 Config;             /**< The configuration data. */
@@ -294,6 +326,7 @@ class CSelector : public CBase
         vector<SDL_Rect>        RectEntries;        /**< Collection of position rects for the displayed entries. */
         vector<SDL_Rect>        RectButtonsLeft;    /**< Collection of position rects for the displayed buttons on left. */
         vector<SDL_Rect>        RectButtonsRight;   /**< Collection of position rects for the displayed buttons on right. */
+        vector<SDL_Rect>        ScreenRectsDirty;   /**< Collection of rects for the areas of the screen that will be updated. */
 };
 
 #endif // CSELECTOR_H

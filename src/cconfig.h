@@ -48,9 +48,9 @@ using namespace std;
 #define CFG_VAL_W           30                      /**< Mininum character width for the profile value. */
 
 // GUI Options Defaults
-#define ENTRY_Y_DELTA       (2 *ScreenRatioH)       /** Scaled pixel amount used between entries. */
-#define ENTRY_X_OFFSET      (10*ScreenRatioW)       /** Scaled pixel amount used to separate gui elements along the X axis. */
-#define ENTRY_Y_OFFSET      (10*ScreenRatioH)       /** Scaled pixel amount used to separate gui elements along the Y axis. */
+#define ENTRY_Y_DELTA       (2*ScreenRatioH)       /** Scaled pixel amount used between entries. */
+#define ENTRY_X_OFFSET      (8*ScreenRatioW)       /** Scaled pixel amount used to separate gui elements along the X axis. */
+#define ENTRY_Y_OFFSET      (8*ScreenRatioH)       /** Scaled pixel amount used to separate gui elements along the Y axis. */
 
 #define BUTTONS_MAX_LEFT    7                       /** Number of buttons on the left side of the GUI. */
 #define BUTTONS_MAX_RIGHT   4                       /** Number of buttons on the right side of the GUI. */
@@ -162,7 +162,7 @@ using namespace std;
 #define OPT_BUTTON_W_LEFT           "button_w_left"
 #define OPT_BUTTON_H_LEFT           "button_h_left"
 #define OPT_BUTTON_W_RIGHT          "button_w_right"
-#define OPT_BUTTON_H_RIGHT          "button_w_left"
+#define OPT_BUTTON_H_RIGHT          "button_h_right"
 #define OPT_PREVIEW_W               "preview_w"
 #define OPT_PREVIEW_H               "preview_h"
 #define OPT_ENTRY_MAX_W             "entry_max_w"
@@ -352,19 +352,25 @@ class CConfig : public CBase
         /** Destructor. */
         virtual ~CConfig();
 
+        /** @brief Set configuration options to calculated defaults
+         */
+        void    SetDefaults ( void );
+
         /** @brief Load the configuration option from file
          * @param location : path and filename to config file
          * @return 0 no errors or 1 if an error is detected
          */
-        int8_t  Load    ( const string& location );
+        int8_t  Load        ( const string& location );
 
         /** @brief Save the configuration option from file
          * @param location : path and filename to config file
          * @return 0 no errors or 1 if an error is detected
          */
-        int8_t  Save    ( const string& location );
+        int8_t  Save        ( const string& location );
 
+        bool                ResetGUI;               /**< NOT CONFIGURABLE Set via argument and uses scaled defaults and not config file */
         bool                Fullscreen;             /**< CONFIGURABLE Refer to HELP_FULLSCREEN */
+        bool                ScreenFlip;             /**< CONFIGURABLE Refer to HELP_SCREENFLIP */
         bool                UseZipSupport;          /**< CONFIGURABLE Refer to HELP_USEZIPSUPPORT */
         bool                ShowExts;               /**< CONFIGURABLE Refer to HELP_SHOWEXTS */
         bool                ShowHidden;             /**< CONFIGURABLE Refer to HELP_SHOWHIDDEN */

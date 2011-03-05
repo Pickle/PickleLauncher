@@ -650,8 +650,8 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
             option.Name = Extensions.at(ext_index).Arguments.at(i).Flag + " ";
             if (CheckRange( item.Entry, Entries.size() ))
             {
-                if (Entries.at(item.Entry).ArgValues.size() == Extensions.at(ext_index).Arguments.at(i).Names.size() &&
-                    Entries.at(item.Entry).ArgValues.size() == Extensions.at(ext_index).Arguments.at(i).Values.size()    )
+                if (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
+                    CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())    )
                 {
                     option.Name += Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) ) + " ";
                     option.Name += Extensions.at(ext_index).Arguments.at(i).Values.at( Entries.at(item.Entry).ArgValues.at(i) );
