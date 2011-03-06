@@ -44,6 +44,7 @@ using namespace std;
 #define EXT_DIRS                "dirs"              /** Special extension identifier for directories. */
 #define VALUE_FILENAME          "%filename%"        /** Profile keyword that is replaced by the path to selected file. */
 #define VALUE_NOVALUE           "%na%"              /** Profile keyword that identifies a empty option. */
+#define VALUE_FLAGONLY          "%flagonly%"        /** Profile keyword that identifies a empty option. */
 
 #define MAX_PATH                1024                /** Maximum path length. */
 #define ARG_MIN_COUNT           4                   /** Minumum options for an argument. */

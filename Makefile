@@ -62,6 +62,10 @@ endif
 # Assign includes
 CXXFLAGS += -I$(INCLUDE) -I$(INCLUDE)/SDL
 
+ifeq ($(BUILDTYPE),debug)
+CXXFLAGS += -DDEBUG
+endif
+
 # Source files
 SRCS       = main.cpp cselector.cpp cprofile.cpp cconfig.cpp czip.cpp cbase.cpp
 SRCS_ZIP   = ioapi.c unzip.c

@@ -477,6 +477,8 @@ int16_t CSelector::DisplayScreen( void )
 
 void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
 {
+    SDL_Rect rect;
+
     if (Config.ScreenFlip == false)
     {
         // Safety Checks
@@ -528,7 +530,12 @@ void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
             Log( "ERROR: UpdateRect H was out of bounds\n" );
         }
 
-        ScreenRectsDirty.push_back( SDL_Rect{ x, y, w, h } );
+        rect.x = x;
+        rect.y = y;
+        rect.w = w;
+        rect.h = h;
+
+        ScreenRectsDirty.push_back( rect );
     }
 }
 
@@ -1528,6 +1535,9 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     string          text;
     SDL_Rect        box, clip;
 
+    prev_width  = 0;
+    prev_height = 0;
+
     if (Config.AutoLayout == false)
     {
         location.x = Config.PosX_Title;
@@ -1863,13 +1873,17 @@ int8_t CSelector::RunExec( uint16_t selection )
                 {
                     command += " " + Profile.Commands.at(i).Arguments.at(j).Flag;
                 }
-                if (entry_found==true)
+
+                if (Profile.Commands.at(i).Arguments.at(j).Flag.compare(VALUE_FLAGONLY) !=0 )
                 {
-                    command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(j));
-                }
-                else
-                {
-                    command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(Profile.Commands.at(i).Arguments.at(j).Default);
+                    if (entry_found==true)
+                    {
+                        command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(j));
+                    }
+                    else
+                    {
+                        command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(Profile.Commands.at(i).Arguments.at(j).Default);
+                    }
                 }
             }
             command += "; ";
@@ -1955,35 +1969,38 @@ int8_t CSelector::RunExec( uint16_t selection )
                 {
                     command += " " + argument->Flag + " ";
 
-                    if (value.compare( VALUE_FILENAME ) == 0)
+                    if (value.compare( VALUE_FLAGONLY ) !=0 )
                     {
-                        if (Config.FilenameArgNoExt == true)
+                        if (value.compare( VALUE_FILENAME ) == 0)
                         {
-                            filename = filename.substr( 0, filename.find_last_of(".") );
-                        }
-
-                        if (entry_found==true)
-                        {
-                            command += '\"';
-                            if (Config.FilenameAbsPath == true)
+                            if (Config.FilenameArgNoExt == true)
                             {
-                                command += entry->Path;
+                                filename = filename.substr( 0, filename.find_last_of(".") );
                             }
-                            command += entry->Name + '\"';
+
+                            if (entry_found==true)
+                            {
+                                command += '\"';
+                                if (Config.FilenameAbsPath == true)
+                                {
+                                    command += entry->Path;
+                                }
+                                command += entry->Name + '\"';
+                            }
+                            else
+                            {
+                                command += '\"';
+                                if (Config.FilenameAbsPath == true)
+                                {
+                                    command += filepath;
+                                }
+                                command += filename + '\"';
+                            }
                         }
                         else
                         {
-                            command += '\"';
-                            if (Config.FilenameAbsPath == true)
-                            {
-                                command += filepath;
-                            }
-                            command += filename + '\"';
+                            command += value;
                         }
-                    }
-                    else
-                    {
-                        command += value;
                     }
                 }
             }
@@ -1999,7 +2016,11 @@ int8_t CSelector::RunExec( uint16_t selection )
     if (Config.ReloadLauncher == true)
     {
         command += " cd " + Profile.LauncherPath + ";";
-        command += " exec " + Profile.LauncherName;
+        command += " exec ./" + Profile.LauncherName ;
+        // Arguments
+        command += " " + string(ARG_PROFILE) + " " + ProfilePath;
+        command += " " + string(ARG_CONFIG)  + " " + ConfigPath;
+        command += " " + string(ARG_ZIPLIST) + " " + ZipListPath;
     }
 
     Log( "Running command: '%s'\n", command.c_str());
