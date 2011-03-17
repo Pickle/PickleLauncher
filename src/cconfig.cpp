@@ -57,6 +57,7 @@ CConfig::CConfig() : CBase(),
         ScreenWidth             (SCREEN_WIDTH),
         ScreenHeight            (SCREEN_HEIGHT),
         ScreenDepth             (SCREEN_DEPTH),
+        CPUClock                (CPU_CLOCK_DEF),
         ScrollSpeed             (SCROLL_SPEED),
         ScrollPauseSpeed        (SCROLL_PAUSE_SPEED),
         EntryYDelta             (0),
@@ -221,6 +222,7 @@ int8_t CConfig::Load( const string& location )
                 LOAD_INT( OPT_SCREEN_HEIGHT,        ScreenHeight );
                 LOAD_INT( OPT_SCREEN_DEPTH,         ScreenDepth );
                 LOAD_INT( OPT_FULLSCREEN,           Fullscreen );
+                LOAD_INT( OPT_CPU_CLOCK,            CPUClock );
                 LOAD_INT( OPT_USEZIPSUPPORT,        UseZipSupport );
                 LOAD_INT( OPT_SHOWEXTS,             ShowExts );
                 LOAD_INT( OPT_SHOWHIDDEN,           ShowHidden );
@@ -370,6 +372,7 @@ int8_t CConfig::Save( const string& location )
         SAVE_INT( OPT_SCREEN_HEIGHT,        HELP_SCREEN_HEIGHT,         ScreenHeight );
         SAVE_INT( OPT_SCREEN_DEPTH,         HELP_SCREEN_DEPTH,          ScreenDepth );
         SAVE_INT( OPT_FULLSCREEN,           HELP_FULLSCREEN,            Fullscreen );
+        SAVE_INT( OPT_CPU_CLOCK,            HELP_CPU_CLOCK,             CPUClock );
         SAVE_INT( OPT_USEZIPSUPPORT,        HELP_USEZIPSUPPORT,         UseZipSupport );
         SAVE_INT( OPT_SHOWEXTS,             HELP_SHOWEXTS,              ShowExts );
         SAVE_INT( OPT_SHOWHIDDEN,           HELP_SHOWHIDDEN,            ShowHidden );

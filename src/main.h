@@ -27,9 +27,16 @@
 #include "cselector.h"
 
 /**< Defines. */
-/**<    DEBUG   : enables additional code and logging foe debug purposes. */
-/**<    PANDORA : enables specific settings for the pandora platform. */
-/**<    X86     : enables specific settings for the PC platform. */
+/**<    DEBUG               : enables additional code and logging for debug purposes. */
+/**<    DEBUG_FPS           : prints frame count information to the console. */
+/**<    DEBUG_FORCE_REDRAW  : force the drawing routines to redraw to the screen every loop. */
+/**<    DEBUG_DRAW_STATES   : prints the draw states every loop to the console. */
+/**<    Platforms   : Select only one. */
+/**<        PANDORA : enables specific settings for the pandora platform. */
+/**<        CAANOO  : enables specific settings for the caanoo platform. */
+/**<        WIZ     : enables specific settings for the wiz platform. */
+/**<        GP2X    : enables specific settings for the gp2x platform. */
+/**<        X86     : enables specific settings for the pc platform. */
 
 /** @brief Main entry into the application
  * @param argc : number of arguments

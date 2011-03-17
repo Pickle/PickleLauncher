@@ -36,6 +36,7 @@ using namespace std;
 #define PROFILE_CMDPATH         "cmdpath="          /** Prefix for the profile file to identify a command path and binary. */
 #define PROFILE_CMDARG          "cmdarg="           /** Prefix for the profile file to identify a command argument. */
 #define PROFILE_EXEPATH         "exepath="          /** Prefix for the profile file to identify the executable path. */
+#define PROFILE_EXEFORCE        "exeforce="         /** Prefix for the profile file to identify the forced executable path for certain files. */
 #define PROFILE_EXTARG          "extarg="           /** Prefix for the profile file to identify the executable path. */
 #define PROFILE_ARGFORCE        "argforce="         /** Prefix for the profile file to identify the executable argument force. */
 #define PROFILE_ENTRY_ARGS      "entryargs="        /** Prefix for the profile file to identify an entry custom argument values. */
@@ -49,6 +50,7 @@ using namespace std;
 #define MAX_PATH                1024                /** Maximum path length. */
 #define ARG_MIN_COUNT           4                   /** Minumum options for an argument. */
 #define ARGFORCE_COUNT          3                   /** Minumum options for an argument force. */
+#define EXEFORCE_COUNT          2                   /** Minumum options for an exe force. */
 #define TOTAL_LETTERS           27                  /** 26 alpha chars plus 1 for anything else */
 
 /** @brief Type of items that can be displayed in selection mode
@@ -97,26 +99,36 @@ struct argforce_t {
     string  Value;                  /** @brief Value to overide the argument with */
 };
 
+/** @brief Data structure for overriding the exe path for listed files.
+ */
+struct exeforce_t {
+    exeforce_t() : exeName(""), exePath(""), Files() {};
+    string              exeName;    /** @brief The executable name to pass the detected files to. */
+    string              exePath;    /** @brief The path to the executable. */
+    vector<string>      Files;      /** @brief Value to overide the argument with */
+};
+
 /** @brief Data structure for an command that is run before the application
  */
 struct command_t {
     command_t() : Name(""), Command(""), Path(""), Arguments() {};
-    string              Name;       /** @brief Display name for the command */
-    string              Command;    /** @brief Executable name for the command */
-    string              Path;       /** @brief Path to the executable */
-    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the command */
+    string              Name;       /** @brief Display name for the command. */
+    string              Command;    /** @brief Executable name for the command. */
+    string              Path;       /** @brief Path to the executable. */
+    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the command. */
 };
 
 /** @brief Data structure for an file extension type
  */
 struct extension_t {
-    extension_t() : exeName(""), exePath(""), extName(), Blacklist(), Arguments(), ArgForces() {};
-    string              exeName;    /** @brief The executable name to pass the detected files to */
-    string              exePath;    /** @brief The path to the executable */
-    vector<string>      extName;    /** @brief The extenion (usually 3 letters) */
-    vector<string>      Blacklist;  /** @brief List of filenames that will be filtered from the selection output */
-    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the appliction */
-    vector<argforce_t>  ArgForces;  /** @brief Overide arguments based on path */
+    extension_t() : exeName(""), exePath(""), extName(), Blacklist(), Arguments(), ArgForces(), ExeForces() {};
+    string              exeName;    /** @brief The executable name to pass the detected files to. */
+    string              exePath;    /** @brief The path to the executable. */
+    vector<string>      extName;    /** @brief The extenion (usually 3 letters). */
+    vector<string>      Blacklist;  /** @brief List of filenames that will be filtered from the selection output. */
+    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the appliction. */
+    vector<argforce_t>  ArgForces;  /** @brief Overide arguments based on path. */
+    vector<exeforce_t>  ExeForces;  /** @brief Overide the exe path based on file names. */
 };
 
 /** @brief Data structure for a detected entry that has been set with custom arg/cmd values

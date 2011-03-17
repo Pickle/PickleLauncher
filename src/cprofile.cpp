@@ -63,7 +63,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
         readline = true;
         while (!fin.eof())
         {
-            if (readline==true)
+            if (readline == true)
             {
                 getline(fin,line);
             }
@@ -81,8 +81,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     CheckPath(FilePath);
                     readline = true;
                 }
-                // COMMANDS
-                else
+                else    // Commands
                 if (line.at(0) == '<' && line.at(line.length()-1) == '>')
                 {
                     if (LoadCmd(fin, line, delimiter))
@@ -92,8 +91,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     }
                     readline = false;
                 }
-                // Extensions
-                else
+                else    // Extensions
                 if (line.at(0) == '[' && line.at(line.length()-1) == ']')
                 {
                     if (LoadExt(fin, line, delimiter))
@@ -103,8 +101,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     }
                     readline = false;
                 }
-                // Entries
-                else
+                else    // Entries
                 if (line.at(0) == '{' && line.at(line.length()-1) == '}')
                 {
                     if (LoadEntry(fin, line, delimiter))
@@ -165,7 +162,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
         cmd.Command = line.substr( line.find_last_of('/')+1 );
         cmd.Path    = line.substr( 0, line.find_last_of('/')+1 );
 
-        if (cmd.Command.compare("./")==0)
+        if (cmd.Command.compare("./") == 0)
         {
             cmd.Command = string(getenv("PWD"))+"/";
         }
@@ -236,6 +233,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     extension_t     ext;
     argument_t      arg;
     argforce_t      argforce;
+    exeforce_t      exeforce;
     string          extensions;
 
     // Extension names
@@ -260,7 +258,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         ext.exeName = line.substr( line.find_last_of('/')+1 );
         ext.exePath = line.substr( 0, line.find_last_of('/')+1 );
 
-        if (ext.exePath.compare("./")==0)
+        if (ext.exePath.compare("./") == 0)
         {
             ext.exePath = string(getenv("PWD"))+"/";
         }
@@ -331,7 +329,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     {
         SplitString( delimiter, line, parts );
 
-        if (parts.size()==ARGFORCE_COUNT)
+        if (parts.size() == ARGFORCE_COUNT)
         {
             argforce.Path = parts.at(0);
             CheckPath(argforce.Path);
@@ -347,8 +345,37 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         }
         getline( fin, line );
     }
-    Extensions.push_back(ext);
 
+    // Exe path forces
+    while (UnprefixString( line, line, PROFILE_EXEFORCE ) == true)
+    {
+        SplitString( delimiter, line, parts );
+
+        if (parts.size()>=EXEFORCE_COUNT)
+        {
+            exeforce.exeName = parts.at(0).substr( line.find_last_of('/')+1 );
+            exeforce.exePath = parts.at(0).substr( 0, line.find_last_of('/')+1 );
+
+            if (exeforce.exePath.compare("./") == 0)
+            {
+                exeforce.exePath = string(getenv("PWD"))+"/";
+            }
+
+            exeforce.Files.clear();
+            for (i=1; i<parts.size(); i++)
+            {
+                exeforce.Files.push_back( parts.at(i) );
+            }
+            ext.ExeForces.push_back( exeforce );
+        }
+        else
+        {
+            Log( "Error: %s wrong number of parts actual: %d expected: %s\n", PROFILE_EXEFORCE, parts.size(), EXEFORCE_COUNT );
+            return 1;
+        }
+        getline( fin, line );
+    }
+    Extensions.push_back(ext);
 
     // Check for directory exe
     if (ext.exeName.length() > 0)
@@ -541,6 +568,17 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                                          << delimiter << i_to_a(Extensions.at(index).ArgForces.at(i).Argument)
                                          << delimiter << Extensions.at(index).ArgForces.at(i).Value << endl;
             }
+            // Exe forces
+            for (i=0; i<Extensions.at(index).ExeForces.size(); i++)
+            {
+                fout << PROFILE_EXEFORCE << Extensions.at(index).ExeForces.at(i).exePath
+                                         << Extensions.at(index).ExeForces.at(i).exeName;
+                for (j=0; j<Extensions.at(index).ExeForces.at(i).Files.size(); j++)
+                {
+                    fout << delimiter << Extensions.at(index).ExeForces.at(i).Files.at(j);
+                }
+                fout << endl;
+            }
         }
 
         // Entries
@@ -606,14 +644,14 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
         ext_index = FindExtension(item.Name);
     }
 
-    if (CheckRange( ext_index, Extensions.size()) )
+    if (CheckRange( ext_index, Extensions.size()))
     {
         option.Extension = ext_index;
 
         // Scan for command arguments
         for (i=0; i<Commands.size(); i++)
         {
-            for (j=0; j<Commands.at(i).Arguments.size(); j++ )
+            for (j=0; j<Commands.at(i).Arguments.size(); j++)
             {
                 option.Name = Commands.at(i).Name + " " + Commands.at(i).Arguments.at(j).Flag + " ";
                 if (CheckRange( item.Entry, Entries.size() ))
@@ -768,7 +806,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
                     continue;
 
                 // Skip hidden files and folders
-                if (showhidden==false && filename.at(0) == '.')
+                if (showhidden == false && filename.at(0) == '.')
                     continue;
 
                 item.Entry  = -1;
@@ -782,7 +820,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
                     {
                         for (i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
                         {
-                            if (Extensions.at(ext_index).Blacklist.at(i).compare(filename)==0)
+                            if (Extensions.at(ext_index).Blacklist.at(i).compare(filename) == 0)
                             {
                                 found = true;
                                 break;
@@ -829,7 +867,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             {
                 for (i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
                 {
-                    if (Extensions.at(ext_index).Blacklist.at(i).compare(files.at(file))==0)
+                    if (Extensions.at(ext_index).Blacklist.at(i).compare(files.at(file)) == 0)
                     {
                         found = true;
                         break;
@@ -856,7 +894,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
         }
 
         // If here then item is valid and determine if an entry exists
-        if (found==false)
+        if (found == false)
         {
             // Add to display list
             item.Name = files.at(file);
@@ -874,8 +912,8 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             item.Entry = -1;
             for (i=0; i<Entries.size(); i++)
             {
-                if (Entries.at(i).Name.compare(files.at(file))==0 &&
-                    Entries.at(i).Path.compare(location)==0)
+                if (Entries.at(i).Name.compare(files.at(file)) == 0 &&
+                    Entries.at(i).Path.compare(location) == 0)
                 {
 
                     item.Entry = i;
@@ -923,7 +961,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
     alpha_index = 0;
     for (i=0; i<AlphabeticIndices.size(); i++)
     {
-        if (AlphabeticIndices.at(i)==0)
+        if (AlphabeticIndices.at(i) == 0)
         {
             AlphabeticIndices.at(i) = alpha_index;
         }

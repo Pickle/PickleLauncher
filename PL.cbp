@@ -59,6 +59,7 @@
 			<Add option="-Wall" />
 			<Add option="-DX86" />
 			<Add option="-DPL_UNZIP_DONTUSE" />
+			<Add directory="/usr/include/SDL" />
 		</Compiler>
 		<Linker>
 			<Add library="SDL" />
@@ -73,6 +74,8 @@
 		<Unit filename="src/cprofile.h" />
 		<Unit filename="src/cselector.cpp" />
 		<Unit filename="src/cselector.h" />
+		<Unit filename="src/csystem.cpp" />
+		<Unit filename="src/csystem.h" />
 		<Unit filename="src/czip.cpp" />
 		<Unit filename="src/czip.h" />
 		<Unit filename="src/main.cpp" />

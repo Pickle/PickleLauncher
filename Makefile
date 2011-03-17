@@ -8,7 +8,7 @@ LIB_ZIP = libunzip.a
 BUILDTYPE = release
 
 # Compiler flags
-CXXFLAGS     = -g -Wall -O3
+CXXFLAGS     = -g -Wall -Wextra -O3
 ZIP_CFLAGS   = $(CXXFLAGS)
 # Linker flags
 BASE_LDFLAGS = -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL
@@ -16,7 +16,7 @@ ZIP_LDFLAGS  = -L$(LIBRARY) -lz
 
 # Target compiler options
 ifeq ($(BUILDTARGET),PANDORA)
-PREFIX   = /mythtv/media/devel/toolchains/pandora/arm-2009q3
+PREFIX   = /mythtv/media/devel/toolchains/pandora/arm-2010.09
 TOOLS    = bin
 TARGET   = arm-none-linux-gnueabi-
 INCLUDE  = $(PREFIX)/usr/include
@@ -30,6 +30,7 @@ TOOLS    = tools/gcc-4.2.4-glibc-2.7-eabi/bin
 TARGET   = arm-gph-linux-gnueabi-
 INCLUDE  = $(PREFIX)/DGE/include
 LIBRARY  = $(PREFIX)/DGE/lib/target
+CXXFLAGS += -DCAANOO
 LDFLAGS  = $(BASE_LDFLAGS)
 else
 ifeq ($(BUILDTARGET),WIZ)
@@ -38,6 +39,7 @@ TOOLS    = bin
 TARGET   = arm-openwiz-linux-gnu-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
+CXXFLAGS += -DWIZ
 LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -lz
 else
 ifeq ($(BUILDTARGET),GP2X)
@@ -46,6 +48,7 @@ TOOLS    = bin
 TARGET   = arm-open2x-linux-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
+CXXFLAGS += -DGP2X
 LDFLAGS  = -static $(BASE_LDFLAGS) -lfreetype -lz -lpng12 -lpthread -ldl
 else # default linux
 PREFIX   = /usr
@@ -67,7 +70,7 @@ CXXFLAGS += -DDEBUG
 endif
 
 # Source files
-SRCS       = main.cpp cselector.cpp cprofile.cpp cconfig.cpp czip.cpp cbase.cpp
+SRCS       = main.cpp cselector.cpp cprofile.cpp cconfig.cpp csystem.cpp czip.cpp cbase.cpp
 SRCS_ZIP   = ioapi.c unzip.c
 
 # Assign paths to binaries/sources/objects

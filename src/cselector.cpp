@@ -79,6 +79,7 @@ CSelector::CSelector() : CBase(),
         Fonts               (),
         Config              (),
         Profile             (),
+        System              (),
         ConfigPath          (DEF_CONFIG),
         ProfilePath         (DEF_PROFILE),
         ZipListPath         (DEF_ZIPLIST),
@@ -139,6 +140,8 @@ int8_t CSelector::Run( int32_t argc, char** argv )
     result = 0;
 
     ProcessArguments( argc, argv );
+
+    System.SetCPUClock( Config.CPUClock );
 
     // Load video,input,profile resources
     if (OpenResources())
@@ -541,7 +544,7 @@ void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
 
 void CSelector::UpdateScreen( void )
 {
-#if defined(DEBUG_REDRAW_FORCE)
+#if defined(DEBUG_FORCE_REDRAW)
     Redraw = true;
 #endif
 
@@ -578,7 +581,7 @@ void CSelector::UpdateScreen( void )
     FrameEndTime = SDL_GetTicks();
     FrameDelay   = (MS_PER_SEC/FRAMES_PER_SEC) - (FrameEndTime - FrameStartTime);
 
-#if defined(DEBUG)
+#if defined(DEBUG_FPS)
     LoopTimeAverage = (LoopTimeAverage + (FrameEndTime - FrameStartTime))/2;
 #endif
 
@@ -600,7 +603,7 @@ void CSelector::UpdateScreen( void )
     }
     FrameStartTime = SDL_GetTicks();
 
-#if defined(DEBUG)
+#if defined(DEBUG_FPS)
     if (FrameStartTime - FrameCountTime >= MS_PER_SEC)
     {
         FrameCountTime  = FrameStartTime;
@@ -716,8 +719,7 @@ int8_t CSelector::DisplaySelector( void )
             DrawState_ButtonL   = true;
             DrawState_ButtonR   = true;
         }
-#if defined(DEBUG)
-/*
+#if defined(DEBUG_DRAW_STATES)
         else
         {
             cout << "DEBUG "
@@ -731,7 +733,6 @@ int8_t CSelector::DisplaySelector( void )
                  << " " << i_to_a(DrawState_ButtonL)
                  << " " << i_to_a(DrawState_ButtonR) << endl;
         }
-*/
 #endif
 
         // Draw background or clear screen
@@ -1674,7 +1675,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         case MODE_SELECT_ENTRY:
             total = ItemsEntry.size();
             break;
-        case MODE_SELECT_ARGUMENT: /* fall through */
+        case MODE_SELECT_ARGUMENT: // fall through
         case MODE_SELECT_OPTION:
             total = ItemsArgument.size();
             break;
@@ -1818,15 +1819,17 @@ int8_t CSelector::DrawText( SDL_Rect& location )
 int8_t CSelector::RunExec( uint16_t selection )
 {
     bool entry_found;
-    uint16_t i, j;
+    uint16_t i, j, k;
     int16_t ext_index;
     string filename;
     string filepath;
     string command;
     string extension;
     string value;
+    string cmdpath, cmdname;
     entry_t* entry = NULL;
     argforce_t* argforce = NULL;
+    exeforce_t* exeforce = NULL;
     argument_t* argument = NULL;
 
     // Find a entry for argument values
@@ -1861,6 +1864,27 @@ int8_t CSelector::RunExec( uint16_t selection )
     {
         command.clear();
 
+        // Unzip if needed
+        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+        {
+            mkdir( Config.ZipPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
+            if (ExtractAllFiles == true)    // Extract all
+            {
+                Profile.Minizip.ExtractFiles( Profile.FilePath + Profile.ZipFile, Config.ZipPath );
+            }
+            else                            // Extract one
+            {
+                Profile.Minizip.ExtractFile( Profile.FilePath + Profile.ZipFile, Config.ZipPath, filename );
+            }
+
+            filepath = Config.ZipPath + "/";
+        }
+        else
+        {
+            filepath = Profile.FilePath;
+        }
+
+
         // Setup commands
         for (i=0; i<Profile.Commands.size(); i++)
         {
@@ -1889,37 +1913,34 @@ int8_t CSelector::RunExec( uint16_t selection )
             command += "; ";
         }
 
-        // Setup executable
-        command += "cd " + Profile.Extensions.at(ext_index).exePath + "; ";
+        // Check exe forces
+        cmdpath = Profile.Extensions.at(ext_index).exePath;
+        cmdname = Profile.Extensions.at(ext_index).exeName;
+        for (j=0; j<Profile.Extensions.at(ext_index).ExeForces.size(); j++)
+        {
+            exeforce = &Profile.Extensions.at(ext_index).ExeForces.at(j);
+            for (k=0; k<exeforce->Files.size(); k++)
+            {
+                if (exeforce->Files.at(k).compare( lowercase(filename) ) == 0)
+                {
+                    cmdpath = exeforce->exePath;
+                    cmdname = exeforce->exeName;
+                    break;
+                }
+            }
+        }
+
+        // Add Executable to command
+        command += "cd " + cmdpath + "; ";
         command += "LD_LIBRARY_PATH=./; export LD_LIBRARY_PATH; ";
-        command += "./" + Profile.Extensions.at(ext_index).exeName;
-
-        // Unzip if needed
-        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
-        {
-            mkdir( Config.ZipPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
-            if (ExtractAllFiles == true)    // Extract all
-            {
-                Profile.Minizip.ExtractFiles( Profile.FilePath + Profile.ZipFile, Config.ZipPath );
-            }
-            else                            // Extract one
-            {
-                Profile.Minizip.ExtractFile( Profile.FilePath + Profile.ZipFile, Config.ZipPath, filename );
-            }
-
-            filepath = Config.ZipPath + "/";
-        }
-        else
-        {
-            filepath = Profile.FilePath;
-        }
+        command += "./" + cmdname;
 
         // Setup arguments
         for (i=0; i<Profile.Extensions.at(ext_index).Arguments.size(); i++)
         {
             value.clear();
-
             argument = &Profile.Extensions.at(ext_index).Arguments.at(i);
+
             // Check arg forces
             for (j=0; j<Profile.Extensions.at(ext_index).ArgForces.size(); j++)
             {
@@ -2027,7 +2048,7 @@ int8_t CSelector::RunExec( uint16_t selection )
 
     CloseResources(0);
 
-    execlp( "/bin/sh", "/bin/sh","-c", command.c_str(), NULL );
+    execlp( "/bin/sh", "/bin/sh", "-c", command.c_str(), NULL );
 
     //if execution continues then something went wrong and as we already called SDL_Quit we cannot continue, try reloading
     Log( "Error executing selected application, re-launching %s\n", APPNAME);
@@ -2337,7 +2358,7 @@ int8_t CSelector::PollInputs( void )
         // Go up into a dir
         if (Rescan == false && IsEventOn(EVENT_DIR_UP) == true)
         {
-            if (Profile.ZipFile.length() > 0)
+            if (Config.UseZipSupport == 1 && Profile.ZipFile.length() > 0)
             {
                 ZipUp();
             }
@@ -2362,7 +2383,7 @@ int8_t CSelector::PollInputs( void )
                         DirectoryDown();
                     }
                 }
-                else if (ItemsEntry.at(DisplayList.at(Mode).absolute).Type == TYPE_ZIP)
+                else if (Config.UseZipSupport == 1 && ItemsEntry.at(DisplayList.at(Mode).absolute).Type == TYPE_ZIP)
                 {
                     ZipDown();
                 }

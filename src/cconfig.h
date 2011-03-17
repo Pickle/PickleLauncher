@@ -24,6 +24,7 @@
 #define CCONFIG_H
 
 #include "cbase.h"
+#include "csystem.h"
 
 using namespace std;
 
@@ -85,6 +86,9 @@ using namespace std;
 #define HELP_FULLSCREEN             "True if screen is set to fullscreen mode, otherwise false."
 
 // Selector options
+#define OPT_CPU_CLOCK               "cpu_clock"
+#define HELP_CPU_CLOCK              "If supported, will set the CPU to clock value in Mhz."
+
 #define OPT_USEZIPSUPPORT           "use_zip_support"
 #define HELP_USEZIPSUPPORT          "True if launcher uses internal zip support."
 
@@ -258,30 +262,30 @@ using namespace std;
 #define HELP_COLOR_FONTFOLDERS      "Color index used for the coloring the entries that are folders."
 
 // Keyboard
-#define OPT_KEYUP               "key_up"
-#define OPT_KEYDOWN             "key_down"
-#define OPT_KEYLEFT             "key_left"
-#define OPT_KEYRIGHT            "key_right"
-#define OPT_KEYDIRUP            "key_dirup"
-#define OPT_KEYDIRDOWN          "key_dirdown"
-#define OPT_KEYCFGENTRY         "key_cfgentry"
-#define OPT_KEYCFGAPP           "key_cfgapp"
-#define OPT_KEYSELECT           "key_select"
-#define OPT_KEYQUIT             "key_quit"
+#define OPT_KEYUP                   "key_up"
+#define OPT_KEYDOWN                 "key_down"
+#define OPT_KEYLEFT                 "key_left"
+#define OPT_KEYRIGHT                "key_right"
+#define OPT_KEYDIRUP                "key_dirup"
+#define OPT_KEYDIRDOWN              "key_dirdown"
+#define OPT_KEYCFGENTRY             "key_cfgentry"
+#define OPT_KEYCFGAPP               "key_cfgapp"
+#define OPT_KEYSELECT               "key_select"
+#define OPT_KEYQUIT                 "key_quit"
 // Joystick
-#define OPT_JOYUP               "button_up"
-#define OPT_JOYDOWN             "button_down"
-#define OPT_JOYLEFT             "button_left"
-#define OPT_JOYRIGHT            "button_right"
-#define OPT_JOYDIRUP            "button_dirup"
-#define OPT_JOYDIRDOWN          "button_dirdown"
-#define OPT_JOYCFGENTRY         "button_cfgentry"
-#define OPT_JOYCFGAPP           "button_cfgapp"
-#define OPT_JOYSELECT           "button_select"
-#define OPT_JOYDIRQUIT          "button_quit"
+#define OPT_JOYUP                   "button_up"
+#define OPT_JOYDOWN                 "button_down"
+#define OPT_JOYLEFT                 "button_left"
+#define OPT_JOYRIGHT                "button_right"
+#define OPT_JOYDIRUP                "button_dirup"
+#define OPT_JOYDIRDOWN              "button_dirdown"
+#define OPT_JOYCFGENTRY             "button_cfgentry"
+#define OPT_JOYCFGAPP               "button_cfgapp"
+#define OPT_JOYSELECT               "button_select"
+#define OPT_JOYDIRQUIT              "button_quit"
 
-#define OPT_DEADZONE            "deadzone"
-#define HELP_DEADZONE           "Deadzone for analog joysticks."
+#define OPT_DEADZONE                "deadzone"
+#define HELP_DEADZONE               "Deadzone for analog joysticks."
 
 /** @brief Internal user events
  */
@@ -394,6 +398,7 @@ class CConfig : public CBase
         int16_t             ScreenWidth;            /**< CONFIGURABLE Refer to HELP_SCREEN_WIDTH */
         int16_t             ScreenHeight;           /**< CONFIGURABLE Refer to HELP_SCREEN_HEIGHT */
         int16_t             ScreenDepth;            /**< CONFIGURABLE Refer to HELP_SCREEN_DEPTH */
+        uint16_t            CPUClock;               /**< CONFIGURABLE Refer to HELP_CPU_CLOCK */
         uint16_t            ScrollSpeed;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ScrollPauseSpeed;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            EntryYDelta;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */

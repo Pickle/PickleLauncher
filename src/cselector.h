@@ -27,16 +27,17 @@
 #include "cbase.h"
 #include "cconfig.h"
 #include "cprofile.h"
+#include "csystem.h"
 
 using namespace std;
 
-#define ARG_RESETGUI    "--resetgui"                            /** Flag to reset GUI settings based on the current resolution. */
-#define ARG_CONFIG      "--config"                              /** Flag to override the config file. */
-#define DEF_CONFIG      "config.txt"                            /** Default config filename. */
-#define ARG_PROFILE     "--profile"                             /** Flag to override the profile file. */
-#define DEF_PROFILE     "profile.txt"                           /** Default profile filename. */
-#define ARG_ZIPLIST     "--ziplist"                             /** Flag to override the ziplist file. */
-#define DEF_ZIPLIST     "ziplist.txt"                           /** Default ziplist filename. */
+#define ARG_RESETGUI            "--resetgui"                    /** Flag to reset GUI settings based on the current resolution. */
+#define ARG_CONFIG              "--config"                      /** Flag to override the config file. */
+#define DEF_CONFIG              "config.txt"                    /** Default config filename. */
+#define ARG_PROFILE             "--profile"                     /** Flag to override the profile file. */
+#define DEF_PROFILE             "profile.txt"                   /** Default profile filename. */
+#define ARG_ZIPLIST             "--ziplist"                     /** Flag to override the ziplist file. */
+#define DEF_ZIPLIST             "ziplist.txt"                   /** Default ziplist filename. */
 
 #define ENTRY_ARROW             "-> "                           /** Ascii fallback for the entry arrow selector. */
 #define BUTTON_LABEL_ONE_UP     "<"                             /** Ascii text fallback for the one up button label. */
@@ -57,17 +58,17 @@ using namespace std;
 #define EMPTY_DIR_LABEL         "<no files detected in dir>"    /** Ascii text for display if no files or dirs are detected. */
 #define EMPTY_ZIP_LABEL         "<no files detected in zip>"    /** Ascii text for display if no files in a zip are detected. */
 
-#define EVENT_LOOPS_ON  0                                                           /** Value set to loops to indentify an active event. */
-#define EVENT_LOOPS_OFF 0x7F                                                        /** Value set to loops to indentify an inactive event. */
-#define EVENT_LOOPS     10                                                          /** Number of loops an event must be active to be detected to be on. */
-#define IsEventOn(x)    ((EventPressCount.at(x) <= EVENT_LOOPS_ON) ? true : false)  /** Determines if an event is active. */
+#define EVENT_LOOPS_ON          0                               /** Value set to loops to indentify an active event. */
+#define EVENT_LOOPS_OFF         0x7F                            /** Value set to loops to indentify an inactive event. */
+#define EVENT_LOOPS             10                              /** Number of loops an event must be active to be detected to be on. */
+#define IsEventOn(x)    ((EventPressCount.at(x) <= EVENT_LOOPS_ON)  ? true : false) /** Determines if an event is active. */
 #define IsEventOff(x)   ((EventPressCount.at(x) == EVENT_LOOPS_OFF) ? true : false) /** Determines if an event is inactive. */
 
-#define MS_PER_SEC          1000                                /** Milliseconds in 1 Second. */
-#define FRAMES_PER_SEC      60                                  /** Frames in 1 Second. */
-#define FRAME_SKIP_RATIO    4                                   /** Maximum frames skip ratio, draw 1 frame for every X number of skipped frames. */
+#define MS_PER_SEC              1000                            /** Milliseconds in 1 Second. */
+#define FRAMES_PER_SEC          60                              /** Frames in 1 Second. */
+#define FRAME_SKIP_RATIO        4                               /** Maximum frames skip ratio, draw 1 frame for every X number of skipped frames. */
 
-#define FREE_IMAGE(X)   if (X != NULL) { SDL_FreeSurface(X); X = NULL; }
+#define FREE_IMAGE(X)   if (X != NULL) { SDL_FreeSurface(X); X = NULL; } /** Macro for checking and releasing pointers to pixel data. */
 
 /** @brief Modes of the launcher.
  */
@@ -310,6 +311,7 @@ class CSelector : public CBase
         vector<TTF_Font*>       Fonts;              /**< SDL-TTF references to the rendered font in different size. */
         CConfig                 Config;             /**< The configuration data. */
         CProfile                Profile;            /**< The extension and entries data. */
+        CSystem                 System;             /**< System specific controls and methods. */
         string                  ConfigPath;         /**< Contains the file path to the config.txt. */
         string                  ProfilePath;        /**< Contains the file path to the profile.txt. */
         string                  ZipListPath;        /**< Contains the path and name of the files that have been unzipped. */
