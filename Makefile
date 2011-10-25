@@ -16,7 +16,7 @@ ZIP_LDFLAGS  = -L$(LIBRARY) -lz
 
 # Target compiler options
 ifeq ($(BUILDTARGET),PANDORA)
-PREFIX   = /mythtv/media/devel/toolchains/pandora/arm-2010.09
+PREFIX   = /data/devel/toolchains/pandora/arm-2010.09
 TOOLS    = bin
 TARGET   = arm-none-linux-gnueabi-
 INCLUDE  = $(PREFIX)/usr/include
@@ -25,7 +25,7 @@ CXXFLAGS += -DPANDORA
 LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -ltiff -lpng12 -lz -ljpeg -lts
 else
 ifeq ($(BUILDTARGET),CAANOO)
-PREFIX   = /mythtv/media/devel/toolchains/caanoo/GPH_SDK
+PREFIX   = /data/devel/toolchains/caanoo/GPH_SDK
 TOOLS    = tools/gcc-4.2.4-glibc-2.7-eabi/bin
 TARGET   = arm-gph-linux-gnueabi-
 INCLUDE  = $(PREFIX)/DGE/include
@@ -34,7 +34,7 @@ CXXFLAGS += -DCAANOO
 LDFLAGS  = $(BASE_LDFLAGS)
 else
 ifeq ($(BUILDTARGET),WIZ)
-PREFIX   = /mythtv/media/devel/toolchains/openwiz/arm-openwiz-linux-gnu
+PREFIX   = /data/devel/toolchains/openwiz/arm-openwiz-linux-gnu
 TOOLS    = bin
 TARGET   = arm-openwiz-linux-gnu-
 INCLUDE  = $(PREFIX)/include
@@ -43,7 +43,7 @@ CXXFLAGS += -DWIZ
 LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -lz
 else
 ifeq ($(BUILDTARGET),GP2X)
-PREFIX   = /mythtv/media/devel/toolchains/open2x/gcc-4.1.1-glibc-2.3.6
+PREFIX   = /data/devel/toolchains/open2x/gcc-4.1.1-glibc-2.3.6
 TOOLS    = bin
 TARGET   = arm-open2x-linux-
 INCLUDE  = $(PREFIX)/include

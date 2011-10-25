@@ -1560,7 +1560,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     // Entry Filter
     if (DrawState_Filter == true )
     {
-        if (Mode == MODE_SELECT_ENTRY && Profile.EntryFilter.length() > 0)
+        if (Mode == MODE_SELECT_ENTRY)
         {
             if (ImageFilter != NULL)
             {
@@ -1575,27 +1575,40 @@ int8_t CSelector::DrawText( SDL_Rect& location )
 
             FREE_IMAGE( ImageFilter );
 
-            ImageFilter = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), Profile.EntryFilter.c_str(), Config.Colors.at(Config.ColorFontFiles) );
-            if (ImageFilter != NULL)
+            if (Profile.EntryFilter.length() > 0)
             {
-                clip.x = 0;
-                clip.y = 0;
-                clip.w = Config.FilePathMaxWidth;
-                clip.h = ImageFilter->h;
-                if (ImageFilter->w > Config.FilePathMaxWidth)
+                ImageFilter = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), Profile.EntryFilter.c_str(), Config.Colors.at(Config.ColorFontFiles) );
+                if (ImageFilter != NULL)
                 {
-                    clip.x = ImageFilter->w-Config.FilePathMaxWidth;
+                    clip.x = 0;
+                    clip.y = 0;
+                    clip.w = Config.FilePathMaxWidth;
+                    clip.h = ImageFilter->h;
+                    if (ImageFilter->w > Config.FilePathMaxWidth)
+                    {
+                        clip.x = ImageFilter->w-Config.FilePathMaxWidth;
+                    }
+
+                    location.x = Config.ScreenWidth - ImageFilter->w - Config.EntryXOffset;
+
+                    ApplyImage( location.x, location.y, ImageFilter, Screen, &clip );
+                    // If the previous image was larger the update needs to redraw that extra space
+                    if (ImageFilter->w <= prev_width)
+                    {
+                        location.x -= (prev_width - ImageFilter->w);
+                    }
+                    UpdateRect( location.x, location.y, MAX(ImageFilter->w, prev_width), MAX(ImageFilter->h, prev_height) );
                 }
-
-                location.x = Config.ScreenWidth - ImageFilter->w - Config.EntryXOffset;
-
-                ApplyImage( location.x, location.y, ImageFilter, Screen, &clip );
-                UpdateRect( location.x, location.y, MAX(ImageFilter->w, prev_width), MAX(ImageFilter->h,prev_height) );
+                else
+                {
+                    Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                    return 1;
+                }
             }
             else
             {
-                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
-                return 1;
+                location.x = Config.ScreenWidth - prev_width - Config.EntryXOffset;
+                UpdateRect( location.x, location.y, prev_width, prev_height );
             }
         }
         DrawState_Filter = false;

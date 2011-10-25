@@ -118,7 +118,10 @@ void CConfig::SetDefaults( void )
     KeyMaps.at(EVENT_DIR_DOWN)   = SDLK_RSHIFT;
     KeyMaps.at(EVENT_CFG_APP)    = SDLK_1;
     KeyMaps.at(EVENT_CFG_ITEM)   = SDLK_2;
+    KeyMaps.at(EVENT_SET_ONE)    = SDLK_3;
+	KeyMaps.at(EVENT_SET_ALL)    = SDLK_4;
     KeyMaps.at(EVENT_SELECT)     = SDLK_RETURN;
+    KeyMaps.at(EVENT_BACK)       = SDLK_LCTRL;
     KeyMaps.at(EVENT_QUIT)       = SDLK_ESCAPE;
 
     JoyMaps.resize(EVENT_TOTAL);
@@ -130,8 +133,11 @@ void CConfig::SetDefaults( void )
     JoyMaps.at(EVENT_DIR_DOWN)   = 5;
     JoyMaps.at(EVENT_CFG_APP)    = 6;
     JoyMaps.at(EVENT_CFG_ITEM)   = 7;
-    JoyMaps.at(EVENT_SELECT)     = 8;
-    JoyMaps.at(EVENT_QUIT)       = 9;
+    JoyMaps.at(EVENT_SET_ONE)    = 8;
+	JoyMaps.at(EVENT_SET_ALL)    = 9;
+    JoyMaps.at(EVENT_SELECT)     = 10;
+    JoyMaps.at(EVENT_BACK)       = 11;
+    JoyMaps.at(EVENT_QUIT)       = 12;
 
     PathButtons.resize(EVENT_TOTAL);
     PathButtons.at(EVENT_ONE_UP)        = "images/button_oneup.png";
@@ -300,7 +306,6 @@ int8_t CConfig::Load( const string& location )
                 LOAD_INT( OPT_COLOR_FONTFOLDERS,    ColorFontFolders );
                 // Keyboard mappings
                 LOAD_KEY( OPT_KEYUP,                KeyMaps.at(EVENT_ONE_UP) );
-                LOAD_KEY( OPT_KEYUP,                KeyMaps.at(EVENT_ONE_UP) );
                 LOAD_KEY( OPT_KEYDOWN,              KeyMaps.at(EVENT_ONE_DOWN) );
                 LOAD_KEY( OPT_KEYLEFT ,             KeyMaps.at(EVENT_PAGE_UP) );
                 LOAD_KEY( OPT_KEYRIGHT,             KeyMaps.at(EVENT_PAGE_DOWN) );
@@ -308,7 +313,10 @@ int8_t CConfig::Load( const string& location )
                 LOAD_KEY( OPT_KEYDIRDOWN,           KeyMaps.at(EVENT_DIR_DOWN) );
                 LOAD_KEY( OPT_KEYCFGAPP,            KeyMaps.at(EVENT_CFG_APP) );
                 LOAD_KEY( OPT_KEYCFGENTRY,          KeyMaps.at(EVENT_CFG_ITEM) );
+				LOAD_KEY( OPT_KEYSETONE,            KeyMaps.at(EVENT_SET_ONE) );
+				LOAD_KEY( OPT_KEYSETALL,            KeyMaps.at(EVENT_SET_ALL) );
                 LOAD_KEY( OPT_KEYSELECT,            KeyMaps.at(EVENT_SELECT) );
+				LOAD_KEY( OPT_KEYBACK,              KeyMaps.at(EVENT_BACK) );
                 LOAD_KEY( OPT_KEYQUIT,              KeyMaps.at(EVENT_QUIT) );
                 // Joystick mappings
                 LOAD_INT( OPT_JOYUP,                JoyMaps.at(EVENT_ONE_UP) );
@@ -319,7 +327,10 @@ int8_t CConfig::Load( const string& location )
                 LOAD_INT( OPT_JOYDIRDOWN,           JoyMaps.at(EVENT_DIR_DOWN) );
                 LOAD_INT( OPT_JOYCFGAPP,            JoyMaps.at(EVENT_CFG_APP) );
                 LOAD_INT( OPT_JOYCFGENTRY,          JoyMaps.at(EVENT_CFG_ITEM) );
+				LOAD_INT( OPT_JOYSETONE,            JoyMaps.at(EVENT_SET_ONE) );
+				LOAD_INT( OPT_JOYSETALL,            JoyMaps.at(EVENT_SET_ALL) );
                 LOAD_INT( OPT_JOYSELECT,            JoyMaps.at(EVENT_SELECT) );
+                LOAD_INT( OPT_JOYBACK,              JoyMaps.at(EVENT_BACK) );
                 LOAD_INT( OPT_JOYDIRQUIT,           JoyMaps.at(EVENT_QUIT) );
                 // Analog joystick mappings
                 LOAD_INT( OPT_DEADZONE,             AnalogDeadZone );
@@ -466,9 +477,12 @@ int8_t CConfig::Save( const string& location )
         SAVE_STR( OPT_KEYRIGHT,             GET_KEY_NAME(EVENT_PAGE_DOWN),  KeyMaps.at(EVENT_PAGE_DOWN) );
         SAVE_STR( OPT_KEYDIRUP,             GET_KEY_NAME(EVENT_DIR_UP),     KeyMaps.at(EVENT_DIR_UP) );
         SAVE_STR( OPT_KEYDIRDOWN,           GET_KEY_NAME(EVENT_DIR_DOWN),   KeyMaps.at(EVENT_DIR_DOWN) );
-        SAVE_STR( OPT_KEYSELECT,            GET_KEY_NAME(EVENT_SELECT),     KeyMaps.at(EVENT_SELECT) );
         SAVE_STR( OPT_KEYCFGAPP,            GET_KEY_NAME(EVENT_CFG_APP),    KeyMaps.at(EVENT_CFG_APP) );
         SAVE_STR( OPT_KEYCFGENTRY,          GET_KEY_NAME(EVENT_CFG_ITEM),   KeyMaps.at(EVENT_CFG_ITEM) );
+		SAVE_STR( OPT_KEYSETONE,            GET_KEY_NAME(EVENT_SET_ONE),    KeyMaps.at(EVENT_SET_ONE) );
+		SAVE_STR( OPT_KEYSETALL,            GET_KEY_NAME(EVENT_SET_ALL),    KeyMaps.at(EVENT_SET_ALL) );
+        SAVE_STR( OPT_KEYSELECT,            GET_KEY_NAME(EVENT_SELECT),     KeyMaps.at(EVENT_SELECT) );
+        SAVE_STR( OPT_KEYBACK,              GET_KEY_NAME(EVENT_BACK),       KeyMaps.at(EVENT_BACK) );
         SAVE_STR( OPT_KEYQUIT,              GET_KEY_NAME(EVENT_QUIT),       KeyMaps.at(EVENT_QUIT) );
         SAVE_LBL( "#   Joystick" );
         SAVE_INT( OPT_JOYUP,                HELP_DEFAULT,                   JoyMaps.at(EVENT_ONE_UP) );
@@ -479,6 +493,8 @@ int8_t CConfig::Save( const string& location )
         SAVE_INT( OPT_JOYDIRDOWN,           HELP_DEFAULT,                   JoyMaps.at(EVENT_DIR_DOWN) );
         SAVE_INT( OPT_JOYCFGAPP,            HELP_DEFAULT,                   JoyMaps.at(EVENT_CFG_APP) );
         SAVE_INT( OPT_JOYCFGENTRY,          HELP_DEFAULT,                   JoyMaps.at(EVENT_CFG_ITEM) );
+		SAVE_STR( OPT_JOYSETONE,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ONE) );
+		SAVE_STR( OPT_JOYSETALL,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ALL) );
         SAVE_INT( OPT_JOYSELECT,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SELECT) );
         SAVE_INT( OPT_JOYDIRQUIT,           HELP_DEFAULT,                   JoyMaps.at(EVENT_QUIT) );
         SAVE_INT( OPT_DEADZONE,             HELP_DEADZONE,                  AnalogDeadZone );

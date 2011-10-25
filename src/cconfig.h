@@ -270,8 +270,12 @@ using namespace std;
 #define OPT_KEYDIRDOWN              "key_dirdown"
 #define OPT_KEYCFGENTRY             "key_cfgentry"
 #define OPT_KEYCFGAPP               "key_cfgapp"
+#define OPT_KEYSETONE               "key_setone"
+#define OPT_KEYSETALL               "key_setall"
 #define OPT_KEYSELECT               "key_select"
+#define OPT_KEYBACK                 "key_back"
 #define OPT_KEYQUIT                 "key_quit"
+
 // Joystick
 #define OPT_JOYUP                   "button_up"
 #define OPT_JOYDOWN                 "button_down"
@@ -281,7 +285,10 @@ using namespace std;
 #define OPT_JOYDIRDOWN              "button_dirdown"
 #define OPT_JOYCFGENTRY             "button_cfgentry"
 #define OPT_JOYCFGAPP               "button_cfgapp"
+#define OPT_JOYSETONE               "button_setone"
+#define OPT_JOYSETALL               "button_setall"
 #define OPT_JOYSELECT               "button_select"
+#define OPT_JOYBACK                 "button_back"
 #define OPT_JOYDIRQUIT              "button_quit"
 
 #define OPT_DEADZONE                "deadzone"

@@ -23,7 +23,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define APPVERSION      "v0.20"             /**< The current version. */
+#define APPVERSION      "v0.21"             /**< The current version. */
 #define APPNAME         "PickleLauncher"    /**< Application name. */
 #define APPAUTHOR       "Scott Smith"       /**< Application author. */
 #define APPCOPYRIGHT    "(c) 2010-2011"     /**< Copyright year. */
