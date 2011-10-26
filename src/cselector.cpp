@@ -1533,6 +1533,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     int16_t         total;
     int16_t         prev_width;
     int16_t         prev_height;
+    int16_t         max_height;
     string          text;
     SDL_Rect        box, clip;
 
@@ -1557,11 +1558,12 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         location.y += ImageTitle->h + Config.EntryYDelta;
     }
 
-    // Entry Filter
-    if (DrawState_Filter == true )
+    // Entry Filter and Filepath (they can overlap so both are drawn when either change)
+    if (Mode == MODE_SELECT_ENTRY)
     {
-        if (Mode == MODE_SELECT_ENTRY)
+        if (DrawState_FilePath == true || DrawState_Filter == true )
         {
+            // Entry Filter
             if (ImageFilter != NULL)
             {
                 prev_width  = ImageFilter->w;
@@ -1572,6 +1574,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                 prev_width  = 0;
                 prev_height = 0;
             }
+            max_height = prev_height;
 
             FREE_IMAGE( ImageFilter );
 
@@ -1592,12 +1595,8 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                     location.x = Config.ScreenWidth - ImageFilter->w - Config.EntryXOffset;
 
                     ApplyImage( location.x, location.y, ImageFilter, Screen, &clip );
-                    // If the previous image was larger the update needs to redraw that extra space
-                    if (ImageFilter->w <= prev_width)
-                    {
-                        location.x -= (prev_width - ImageFilter->w);
-                    }
-                    UpdateRect( location.x, location.y, MAX(ImageFilter->w, prev_width), MAX(ImageFilter->h, prev_height) );
+
+                    max_height = MAX( max_height, ImageFilePath->h );
                 }
                 else
                 {
@@ -1605,22 +1604,9 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                     return 1;
                 }
             }
-            else
-            {
-                location.x = Config.ScreenWidth - prev_width - Config.EntryXOffset;
-                UpdateRect( location.x, location.y, prev_width, prev_height );
-            }
-        }
-        DrawState_Filter = false;
-    }
-    location.x = Config.EntryXOffset;
+            location.x = Config.EntryXOffset;
 
-
-    // File path
-    if (Mode == MODE_SELECT_ENTRY)
-    {
-        if (DrawState_FilePath == true)
-        {
+            // File path
             if (ImageFilePath != NULL)
             {
                 prev_width  = ImageFilePath->w;
@@ -1631,6 +1617,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                 prev_width  = 0;
                 prev_height = 0;
             }
+            max_height = MAX( max_height, prev_height );
 
             FREE_IMAGE(ImageFilePath);
 
@@ -1654,16 +1641,22 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                 }
 
                 ApplyImage( location.x, location.y, ImageFilePath, Screen, &clip );
-                UpdateRect( location.x, location.y, MAX(ImageFilePath->w, prev_width), MAX(ImageFilePath->h, prev_height) );
+
+                max_height = MAX( max_height, ImageFilePath->h );
             }
             else
             {
                 Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
                 return 1;
             }
+
+            UpdateRect( 0, location.y, Config.ScreenWidth, max_height );
+
             DrawState_FilePath = false;
+            DrawState_Filter = false;
         }
     }
+
     if (ImageFilePath != NULL)
     {
         location.y += ImageFilePath->h + Config.EntryYOffset;

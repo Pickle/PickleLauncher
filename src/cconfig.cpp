@@ -331,7 +331,7 @@ int8_t CConfig::Load( const string& location )
 				LOAD_INT( OPT_JOYSETALL,            JoyMaps.at(EVENT_SET_ALL) );
                 LOAD_INT( OPT_JOYSELECT,            JoyMaps.at(EVENT_SELECT) );
                 LOAD_INT( OPT_JOYBACK,              JoyMaps.at(EVENT_BACK) );
-                LOAD_INT( OPT_JOYDIRQUIT,           JoyMaps.at(EVENT_QUIT) );
+                LOAD_INT( OPT_JOYQUIT,              JoyMaps.at(EVENT_QUIT) );
                 // Analog joystick mappings
                 LOAD_INT( OPT_DEADZONE,             AnalogDeadZone );
             }
@@ -493,10 +493,11 @@ int8_t CConfig::Save( const string& location )
         SAVE_INT( OPT_JOYDIRDOWN,           HELP_DEFAULT,                   JoyMaps.at(EVENT_DIR_DOWN) );
         SAVE_INT( OPT_JOYCFGAPP,            HELP_DEFAULT,                   JoyMaps.at(EVENT_CFG_APP) );
         SAVE_INT( OPT_JOYCFGENTRY,          HELP_DEFAULT,                   JoyMaps.at(EVENT_CFG_ITEM) );
-		SAVE_STR( OPT_JOYSETONE,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ONE) );
-		SAVE_STR( OPT_JOYSETALL,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ALL) );
+		SAVE_INT( OPT_JOYSETONE,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ONE) );
+		SAVE_INT( OPT_JOYSETALL,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SET_ALL) );
         SAVE_INT( OPT_JOYSELECT,            HELP_DEFAULT,                   JoyMaps.at(EVENT_SELECT) );
-        SAVE_INT( OPT_JOYDIRQUIT,           HELP_DEFAULT,                   JoyMaps.at(EVENT_QUIT) );
+        SAVE_INT( OPT_JOYBACK,              HELP_DEFAULT,                   JoyMaps.at(EVENT_BACK) );
+        SAVE_INT( OPT_JOYQUIT,              HELP_DEFAULT,                   JoyMaps.at(EVENT_QUIT) );
         SAVE_INT( OPT_DEADZONE,             HELP_DEADZONE,                  AnalogDeadZone );
         fout.close();
     }

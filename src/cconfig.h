@@ -289,7 +289,7 @@ using namespace std;
 #define OPT_JOYSETALL               "button_setall"
 #define OPT_JOYSELECT               "button_select"
 #define OPT_JOYBACK                 "button_back"
-#define OPT_JOYDIRQUIT              "button_quit"
+#define OPT_JOYQUIT                 "button_quit"
 
 #define OPT_DEADZONE                "deadzone"
 #define HELP_DEADZONE               "Deadzone for analog joysticks."

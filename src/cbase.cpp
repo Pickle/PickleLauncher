@@ -207,7 +207,7 @@ bool CBase::UnprefixString( string& result, const string& line, const string& pr
     string::size_type pos;
 
     pos = line.find(prefix, 0);
-    if (pos != string::npos )
+    if (pos == 0)
     {
         // Remove the prefix
         pos = line.find("=", 0) + 1;
