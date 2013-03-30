@@ -203,6 +203,12 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
                     return 1;
                 }
             }
+
+            if (arg.Default >= arg.Values.size())
+            {
+                arg.Default = arg.Values.size()-1;
+            }
+
             cmd.Arguments.push_back( arg );
 
             count++;
@@ -306,6 +312,12 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
                     return 1;
                 }
             }
+
+            if (arg.Default >= arg.Values.size())
+            {
+                arg.Default = arg.Values.size()-1;
+            }
+
             ext.Arguments.push_back(arg);
 
             count++;
