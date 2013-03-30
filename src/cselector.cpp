@@ -434,6 +434,10 @@ void CSelector::CloseResources( int8_t result )
 
     Log( "Quitting SDL.\n" );
     SDL_Quit();
+
+    // Flush all std buffers before exit
+    fflush( stdout );
+    fflush( stderr );
 }
 
 int16_t CSelector::DisplayScreen( void )

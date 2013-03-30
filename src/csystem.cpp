@@ -28,15 +28,15 @@ CSystem::CSystem() : CBase()
     memdev = open( "/dev/mem", O_RDWR );
     if (memdev == 0)
     {
-        Log( "Could not open /dev/mem" );
+        Log( "Could not open /dev/mem\n" );
     }
     else
     {
-        memregs = (unsigned short*)mmap( 0, MMAP_ADDRESS, PROT_READ|PROT_WRITE, MAP_SHARED, memdev, 0xc0000000 );
+        memregs = (uint32_t*)mmap( 0, MMAP_ADDRESS, PROT_READ|PROT_WRITE, MAP_SHARED, memdev, 0xc0000000 );
 
         if (memregs == MAP_FAILED)
         {
-            Log( "Could not mmap hardware registers!" );
+            Log( "Could not mmap hardware registers!\n" );
             close(memdev);
         }
     }

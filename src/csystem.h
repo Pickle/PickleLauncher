@@ -45,6 +45,10 @@ using namespace std;
 #define MMAP_ADDRESS        0x20000
 #define SYS_CLK_FREQ        7372800
 
+#elif defined(GP2X)
+#define CPU_CLOCK_DEF       1000
+#define CPU_CLOCK_MAX       2000
+
 #else
 #define CPU_CLOCK_DEF       1
 #define CPU_CLOCK_MAX       1

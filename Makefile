@@ -50,6 +50,15 @@ INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
 CXXFLAGS += -DGP2X
 LDFLAGS  = -static $(BASE_LDFLAGS) -lfreetype -lz -lpng12 -lpthread -ldl
+else
+ifeq ($(BUILDTARGET),GCW)
+PREFIX   = /data/devel/toolchains/gcw_mips/buildroot/output/host/usr
+TOOLS    = bin
+TARGET   = mipsel-gcw0-linux-uclibc-
+INCLUDE  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/include
+LIBRARY  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
+CXXFLAGS += -DGCW
+LDFLAGS  = $(BASE_LDFLAGS) -lz -lpthread
 else # default linux
 PREFIX   = /usr
 TOOLS    = bin
@@ -57,6 +66,7 @@ TARGET   =
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
 LDFLAGS  = $(BASE_LDFLAGS)
+endif
 endif
 endif
 endif

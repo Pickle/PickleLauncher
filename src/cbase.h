@@ -36,6 +36,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 #include "SDL.h"
 #include "SDL_ttf.h"
