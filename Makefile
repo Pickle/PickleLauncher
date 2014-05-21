@@ -9,7 +9,7 @@ BUILDTYPE = release
 
 # Compiler flags
 CXXFLAGS     = -g -Wall -Wextra -O3
-ZIP_CFLAGS   = $(CXXFLAGS)
+ZIP_CFLAGS   = $(CXXFLAGS) -Wno-unused-parameter
 # Linker flags
 BASE_LDFLAGS = -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL -lz
 

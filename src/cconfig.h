@@ -409,8 +409,8 @@ class CConfig : public CBase
         uint16_t            ScrollSpeed;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ScrollPauseSpeed;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            EntryYDelta;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
-        uint16_t            EntryXOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
-        uint16_t            EntryYOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
+        int16_t             EntryXOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
+        int16_t             EntryYOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ButtonWidthLeft;        /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ButtonHeightLeft;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ButtonWidthRight;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */

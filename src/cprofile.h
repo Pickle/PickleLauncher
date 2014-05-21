@@ -84,7 +84,7 @@ struct listoption_t {
  */
 struct argument_t {
     argument_t() : Default(0), Flag(""), Names(), Values() {};
-    int8_t          Default;        /** @brief Index to the default value for the argument */
+    uint8_t         Default;        /** @brief Index to the default value for the argument */
     string          Flag;           /** @brief Flag that is used in the command line string which is followed by the value */
     vector<string>  Names;          /** @brief Names for the possible values */
     vector<string>  Values;         /** @brief Values for the argument */
