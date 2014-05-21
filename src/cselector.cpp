@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2011 Scott Smith
+ *  Copyright (C) 2010-2014 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -187,7 +187,9 @@ void CSelector::ProcessArguments( int argc, char** argv )
     launcher = string(argv[0]);
     Profile.LauncherName = launcher.substr( launcher.find_last_of('/')+1 );
     Profile.LauncherPath = launcher.substr( 0, launcher.find_last_of('/')+1 );
-    if (Profile.LauncherPath.compare("./") == 0 || Profile.LauncherPath.length() == 0)
+    CheckPath( Profile.LauncherPath );
+
+    if (Profile.LauncherPath.length() == 0)
     {
         Profile.LauncherPath = string(getenv("PWD"))+"/";
     }

@@ -11,21 +11,20 @@ BUILDTYPE = release
 CXXFLAGS     = -g -Wall -Wextra -O3
 ZIP_CFLAGS   = $(CXXFLAGS)
 # Linker flags
-BASE_LDFLAGS = -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL
-ZIP_LDFLAGS  = -L$(LIBRARY) -lz
+BASE_LDFLAGS = -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL -lz
 
 # Target compiler options
 ifeq ($(BUILDTARGET),PANDORA)
-PREFIX   = /data/devel/toolchains/pandora/arm-2010.09
+PREFIX   = $(PNDSDK)
 TOOLS    = bin
 TARGET   = arm-none-linux-gnueabi-
 INCLUDE  = $(PREFIX)/usr/include
 LIBRARY  = $(PREFIX)/usr/lib
 CXXFLAGS += -DPANDORA
-LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -ltiff -lpng12 -lz -ljpeg -lts
+LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -ltiff -lpng12 -ljpeg -lts
 else
 ifeq ($(BUILDTARGET),CAANOO)
-PREFIX   = /data/devel/toolchains/caanoo/GPH_SDK
+PREFIX   = $(CAANOOSDK)
 TOOLS    = tools/gcc-4.2.4-glibc-2.7-eabi/bin
 TARGET   = arm-gph-linux-gnueabi-
 INCLUDE  = $(PREFIX)/DGE/include
@@ -34,31 +33,31 @@ CXXFLAGS += -DCAANOO
 LDFLAGS  = $(BASE_LDFLAGS)
 else
 ifeq ($(BUILDTARGET),WIZ)
-PREFIX   = /data/devel/toolchains/openwiz/arm-openwiz-linux-gnu
+PREFIX   = $(WIZSDK)
 TOOLS    = bin
 TARGET   = arm-openwiz-linux-gnu-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
 CXXFLAGS += -DWIZ
-LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -lz
+LDFLAGS  = $(BASE_LDFLAGS) -lfreetype
 else
 ifeq ($(BUILDTARGET),GP2X)
-PREFIX   = /data/devel/toolchains/open2x/gcc-4.1.1-glibc-2.3.6
+PREFIX   = $(GP2XSDK)
 TOOLS    = bin
 TARGET   = arm-open2x-linux-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
 CXXFLAGS += -DGP2X
-LDFLAGS  = -static $(BASE_LDFLAGS) -lfreetype -lz -lpng12 -lpthread -ldl
+LDFLAGS  = -static $(BASE_LDFLAGS) -lfreetype -lpng12 -lpthread -ldl
 else
 ifeq ($(BUILDTARGET),GCW)
-PREFIX   = /data/devel/toolchains/gcw_mips/buildroot/output/host/usr
+PREFIX   = $(GCWSDK)
 TOOLS    = bin
 TARGET   = mipsel-gcw0-linux-uclibc-
 INCLUDE  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/include
 LIBRARY  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
 CXXFLAGS += -DGCW
-LDFLAGS  = $(BASE_LDFLAGS) -lz -lpthread
+LDFLAGS  = $(BASE_LDFLAGS) -lpthread
 else # default linux
 PREFIX   = /usr
 TOOLS    = bin

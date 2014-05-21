@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2011 Scott Smith
+ *  Copyright (C) 2010-2014 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -161,12 +161,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
     {
         cmd.Command = line.substr( line.find_last_of('/')+1 );
         cmd.Path    = line.substr( 0, line.find_last_of('/')+1 );
-
-        if (cmd.Command.compare("./") == 0)
-        {
-            cmd.Command = string(getenv("PWD"))+"/";
-        }
-        CheckPath(cmd.Path);
+        CheckPath( cmd.Path );
 
         getline(fin,line);
     }
@@ -263,11 +258,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     {
         ext.exeName = line.substr( line.find_last_of('/')+1 );
         ext.exePath = line.substr( 0, line.find_last_of('/')+1 );
-
-        if (ext.exePath.compare("./") == 0)
-        {
-            ext.exePath = string(getenv("PWD"))+"/";
-        }
+        CheckPath( ext.exePath );
 
         getline(fin,line);
     }
@@ -367,11 +358,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         {
             exeforce.exeName = parts.at(0).substr( line.find_last_of('/')+1 );
             exeforce.exePath = parts.at(0).substr( 0, line.find_last_of('/')+1 );
-
-            if (exeforce.exePath.compare("./") == 0)
-            {
-                exeforce.exePath = string(getenv("PWD"))+"/";
-            }
+            CheckPath( exeforce.exePath );
 
             exeforce.Files.clear();
             for (i=1; i<parts.size(); i++)

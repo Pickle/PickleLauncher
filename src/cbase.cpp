@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2011 Scott Smith
+ *  Copyright (C) 2010-2014 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ void CBase::Log( const char* output, ... )
     fprintf( stdout, "%s", buffer );
 
 #if defined(DEBUG)
-    FILE* fout = fopen( "log.txt", "a" );
+    FILE* fout = fopen( "/tmp/log.txt", "a" );
     if (!fout)
     {
         printf( "Failed to open logfile\n" );
@@ -248,6 +248,9 @@ void CBase::CheckPath( string& path )
     {
         Log( "Warning: CheckPath path too short\n" );
     }
+
+    path = strreplace( path, "~/", string(getenv("HOME"))+"/" );
+    path = strreplace( path, "./", string(getenv("PWD"))+"/" );
 }
 
 string CBase::cmdclean( string& cmdline )

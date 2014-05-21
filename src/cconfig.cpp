@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2011 Scott Smith
+ *  Copyright (C) 2010-2014 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -203,6 +203,7 @@ int8_t CConfig::Load( const string& location )
     string          label;
     ifstream        fin;
 
+    Log( "  from location %s\n", location.c_str() );
     fin.open(location.c_str(), ios_base::in);
 
     if (!fin)
