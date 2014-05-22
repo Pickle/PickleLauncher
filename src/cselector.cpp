@@ -272,6 +272,7 @@ int8_t CSelector::OpenResources( void )
 
     // Load joystick
 #if !defined(PANDORA) && !defined(X86)
+    Log( "Joystick detected: %d\n", SDL_NumJoysticks() );
     Joystick = SDL_JoystickOpen(0);
     if (Joystick == NULL)
     {
@@ -2149,6 +2150,9 @@ int8_t CSelector::PollInputs( void )
                         }
                     }
                 }
+#if defined(DEBUG)
+                Log( "DEBUG SDL_KEYDOWN name: %s sym: %d\n", keyname.c_str(), event.key.keysym.sym );
+#endif
                 break;
 
             case SDL_KEYUP:
@@ -2163,6 +2167,10 @@ int8_t CSelector::PollInputs( void )
                         EventReleased.at(EVENT_SELECT) = true;
                     }
                 }
+#if defined(DEBUG)
+                keyname = SDL_GetKeyName( event.key.keysym.sym );
+                Log( "DEBUG SDL_KEYUP name: %s sym: %d\n", keyname.c_str(), event.key.keysym.sym );
+#endif
                 break;
 
             case SDL_JOYBUTTONDOWN:
@@ -2177,6 +2185,9 @@ int8_t CSelector::PollInputs( void )
                         EventPressCount.at(EVENT_SELECT) = EVENT_LOOPS_ON;
                     }
                 }
+#if defined(DEBUG)
+                Log( "DEBUG SDL_JOYBUTTONDOWN button: %d\n", event.jbutton.button );
+#endif
                 break;
 
             case SDL_JOYBUTTONUP:
@@ -2191,6 +2202,9 @@ int8_t CSelector::PollInputs( void )
                         EventReleased.at(EVENT_SELECT) = true;
                     }
                 }
+#if defined(DEBUG)
+                Log( "DEBUG SDL_JOYBUTTONUP button: %d\n", event.jbutton.button );
+#endif
                 break;
 
             case SDL_JOYAXISMOTION:
@@ -2241,6 +2255,9 @@ int8_t CSelector::PollInputs( void )
                     EventReleased.at(EVENT_PAGE_UP)     = true;
                     EventReleased.at(EVENT_PAGE_DOWN)   = true;
                 }
+#if defined(DEBUG)
+                Log( "DEBUG SDL_JOYAXISMOTION axis: %d value: %d\n", event.jaxis.axis, event.jaxis.value );
+#endif
                 break;
 
             case SDL_MOUSEMOTION:
@@ -2263,6 +2280,9 @@ int8_t CSelector::PollInputs( void )
                         break;
                     }
                 }
+#if defined(DEBUG)
+                Log( "DEBUG SDL_MOUSEMOTION x: %d y: %d\n", event.motion.x, event.motion.y );
+#endif
                 break;
 
             case SDL_MOUSEBUTTONDOWN:
@@ -2326,7 +2346,7 @@ int8_t CSelector::PollInputs( void )
                             EventReleased.at(index) = true;
                         }
 #if defined(DEBUG)
-                        Log( "DEBUG Releasing all events\n" );
+                        Log( "DEBUG Releasing all mouse events\n" );
 #endif
                         break;
                     default:
