@@ -8,10 +8,10 @@ LIB_ZIP = libunzip.a
 BUILDTYPE = release
 
 # Compiler flags
-CXXFLAGS     = -g -Wall -Wextra -O3
+CXXFLAGS     = -Wall -Wextra -O3
 ZIP_CFLAGS   = $(CXXFLAGS) -Wno-unused-parameter
 # Linker flags
-BASE_LDFLAGS = -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL -lz
+BASE_LDFLAGS = -s -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL -lz
 
 # Target compiler options
 ifeq ($(BUILDTARGET),PANDORA)

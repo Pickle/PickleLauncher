@@ -53,18 +53,18 @@
 			<Add option="-Wmain" />
 			<Add option="-pedantic-errors" />
 			<Add option="-pedantic" />
-			<Add option="-std=c++0x" />
 			<Add option="-Wfatal-errors" />
 			<Add option="-Wextra" />
 			<Add option="-Wall" />
+			<Add option="-std=c++0x" />
 			<Add option="-DX86" />
 			<Add option="-DPL_UNZIP_DONTUSE" />
-			<Add directory="/usr/include/SDL" />
 		</Compiler>
 		<Linker>
 			<Add library="SDL" />
 			<Add library="SDL_image" />
 			<Add library="SDL_ttf" />
+			<Add library="z" />
 		</Linker>
 		<Unit filename="src/cbase.cpp" />
 		<Unit filename="src/cbase.h" />

@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2014 Scott Smith
+ *  Copyright (C) 2010-2018 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

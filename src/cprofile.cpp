@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2014 Scott Smith
+ *  Copyright (C) 2010-2018 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -401,10 +401,30 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     // Extension name
     pos1 = line.find_last_of('/');
     pos2 = line.find_last_of(delimiter);
-    entry.Path  = line.substr( 1, pos1 );
+
+    if ((pos1 == string::npos) || (pos1 > pos2))
+    {
+        entry.Path  = "./"; // default path
+        pos1 = 0;
+    }
+    else
+    {
+        entry.Path  = line.substr( 1, pos1 );
+    }
+
+    if (pos2 == string::npos)
+    {
+        Log( "Error: A delimiter was expected in entry: %s\n", line.c_str() );
+        return 1;
+    }
+
     entry.Name  = line.substr( pos1+1, pos2-pos1-1 );
     entry.Alias = line.substr( pos2+1, line.length()-pos2-2 );
     entry.Custom = true;
+
+#if defined(DEBUG)
+    Log( "DEBUG: Path: '%s' Name: '%s' Alias '%s'\n", entry.Path.c_str(), entry.Name.c_str(), entry.Alias.c_str() );
+#endif
 
     // Extension executable
     getline(fin,line);
@@ -911,8 +931,11 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             item.Entry = -1;
             for (i=0; i<Entries.size(); i++)
             {
-                if (Entries.at(i).Name.compare(files.at(file)) == 0 &&
-                    Entries.at(i).Path.compare(location) == 0)
+                if (  (Entries.at(i).Name.compare(files.at(file)) == 0)
+                    && (   (Entries.at(i).Path.compare("./") == 0)
+                        || (Entries.at(i).Path.compare(location) == 0)
+                       )
+                   )
                 {
 
                     item.Entry = i;

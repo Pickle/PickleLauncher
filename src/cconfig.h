@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2014 Scott Smith
+ *  Copyright (C) 2010-2018 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -78,6 +78,9 @@ using namespace std;
 
 #define OPT_SCREEN_DEPTH            "screen_depth"
 #define HELP_SCREEN_DEPTH           "Screen depth in bits per pixel."
+
+#define OPT_PREV_ENTRY_INDEX        "previous_entry_index"
+#define HELP_PREV_ENTRY_INDEX       "The previous selected entry index."
 
 #define OPT_REFRESH_DELAY           "refresh_delay"
 #define HELP_REFRESH_DELAY          "Delay in milliseconds after a screen flip."
@@ -405,6 +408,7 @@ class CConfig : public CBase
         int16_t             ScreenWidth;            /**< CONFIGURABLE Refer to HELP_SCREEN_WIDTH */
         int16_t             ScreenHeight;           /**< CONFIGURABLE Refer to HELP_SCREEN_HEIGHT */
         int16_t             ScreenDepth;            /**< CONFIGURABLE Refer to HELP_SCREEN_DEPTH */
+        uint16_t            PrevEntryIndex;         /**< CONFIGURABLE Refer to HELP_PREV_ENTRY_INDEX */
         uint16_t            CPUClock;               /**< CONFIGURABLE Refer to HELP_CPU_CLOCK */
         uint16_t            ScrollSpeed;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ScrollPauseSpeed;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */

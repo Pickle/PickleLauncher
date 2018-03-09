@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2014 Scott Smith
+ *  Copyright (C) 2010-2018 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -367,7 +367,6 @@ int8_t CSelector::OpenResources( void )
         Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
         return 1;
     }
-
 
     return 0;
 }
@@ -867,10 +866,36 @@ void CSelector::RescanItems( void )
     }
     ListNames.resize( RectEntries.size() );
 
-    DisplayList.at(Mode).absolute  = 0;
-    DisplayList.at(Mode).relative  = 0;
-    DisplayList.at(Mode).first     = 0;
-    DisplayList.at(Mode).last      = 0;
+    if (Mode == MODE_SELECT_ENTRY)
+    {
+        DisplayList.at(Mode).absolute = Config.PrevEntryIndex;
+        if (DisplayList.at(Mode).absolute < MAX_ENTRIES)
+        {
+            DisplayList.at(Mode).relative = DisplayList.at(Mode).absolute;
+        }
+        else /* Multiple pages of entries */
+        {
+            /* If the last seclected item is in the last page go back some entries to make full page */
+            if (DisplayList.at(Mode).absolute > total-MAX_ENTRIES)
+            {
+                DisplayList.at(Mode).first    = total-MAX_ENTRIES;
+                DisplayList.at(Mode).relative = MAX_ENTRIES-1;
+            }
+            else
+            {
+                DisplayList.at(Mode).first    = DisplayList.at(Mode).absolute;
+                DisplayList.at(Mode).relative = 0;
+            }
+        }
+    }
+    else
+    {
+        DisplayList.at(Mode).absolute = 0;
+        DisplayList.at(Mode).relative = 0;
+        DisplayList.at(Mode).first    = 0;
+    }
+
+    DisplayList.at(Mode).last      = MIN( DisplayList.at(Mode).first+MAX_ENTRIES, total-1 );
     DisplayList.at(Mode).total     = total;
 }
 
@@ -946,6 +971,8 @@ void CSelector::PopModeEntry( void )
             Log( "Error: CSelector::PopulateModeSelectEntry Index Error\n" );
         }
     }
+
+    Config.PrevEntryIndex = DisplayList.at( MODE_SELECT_ENTRY ).absolute;
 }
 
 void CSelector::PopModeArgument( void )
@@ -1279,7 +1306,11 @@ void CSelector::SelectionLimits( item_pos_t& pos )
 {
     if (pos.absolute <= pos.first)
     {
-        pos.relative = 0;
+        if (pos.relative < 0)
+        {
+            pos.relative = 0;
+        }
+
         if (pos.absolute < 0)
         {
             pos.absolute = 0;
