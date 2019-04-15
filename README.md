@@ -1,5 +1,5 @@
 PickleLauncher
-  by Scott Smith (Pickle) Copyright (C) 2010-2011
+  by Scott Smith (Pickle) Copyright (C) 2010-2019
 
 Summary:
   PickleLauncher is meant to a simple frontend for auto-detecting and configuring
