@@ -2,7 +2,7 @@
  *  @section LICENSE
  *
  *  PickleLauncher
- *  Copyright (C) 2010-2018 Scott Smith
+ *  Copyright (C) 2010-2019 Scott Smith
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define APPVERSION      "v0.23"             /**< The current version. */
+#define APPVERSION      "v0.24"             /**< The current version. */
 #define APPNAME         "PickleLauncher"    /**< Application name. */
 #define APPAUTHOR       "Scott Smith"       /**< Application author. */
-#define APPCOPYRIGHT    "(c) 2010-2018"     /**< Copyright year. */
+#define APPCOPYRIGHT    "(c) 2010-2019"     /**< Copyright year. */
 
 #endif // VERSION_H
