@@ -1871,6 +1871,7 @@ int8_t CSelector::RunExec( uint16_t selection )
     string extension;
     string value;
     string cmdpath, cmdname;
+    vector<string> commands;
     entry_t* entry = NULL;
     argforce_t* argforce = NULL;
     exeforce_t* exeforce = NULL;
@@ -2088,7 +2089,15 @@ int8_t CSelector::RunExec( uint16_t selection )
         command += " " + string(ARG_ZIPLIST) + " " + ZipListPath;
     }
 
-    Log( "Running command: '%s'\n", command.c_str());
+    /* Print out all the commands in a list form  */
+    SplitString( ";", command, commands );
+
+    Log( "Running command start:\n");
+    for( i=0; i<commands.size(); i++)
+    {
+        Log( "%02d '%s'\n", i, commands.at(i).c_str());
+    }
+    Log( "Running command end:\n");
 
     CloseResources(0);
 
