@@ -34,6 +34,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
