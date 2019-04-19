@@ -699,8 +699,8 @@ int8_t CSelector::DisplaySelector( void )
     if (Rescan)
     {
         RescanItems();
-        RefreshList = true;
-        Rescan      = false;
+        RefreshList     = true;
+        Rescan          = false;
     }
 
     if (RefreshList)

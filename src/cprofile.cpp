@@ -420,7 +420,6 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
 
     entry.Name  = line.substr( pos1+1, pos2-pos1-1 );
     entry.Alias = line.substr( pos2+1, line.length()-pos2-2 );
-    entry.Custom = true;
 
 #if defined(DEBUG)
     Log( "DEBUG: Path: '%s' Name: '%s' Alias '%s'\n", entry.Path.c_str(), entry.Name.c_str(), entry.Alias.c_str() );
@@ -431,9 +430,20 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     if (UnprefixString( line, line, PROFILE_ENTRY_CMDS ) == true)
     {
         SplitString( delimiter, line, parts );
-        for (i=0; i<parts.size(); i++)
+
+        if (   (parts.size() <= 0)
+            || (parts.at(0).compare(VALUE_NOVALUE) == 0)
+           )
         {
-            entry.CmdValues.push_back( a_to_i( parts.at(i) ) );
+            entry.Custom = false;
+        }
+        else
+        {
+            for (i=0; i<parts.size(); i++)
+            {
+                entry.CmdValues.push_back( a_to_i( parts.at(i) ) );
+            }
+            entry.Custom = true;
         }
     }
     else
@@ -446,9 +456,29 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     if (UnprefixString( line, line, PROFILE_ENTRY_ARGS ) == true)
     {
         SplitString( delimiter, line, parts );
-        for (i=0; i<parts.size(); i++)
+
+        if (   (parts.size() <= 0)
+            || (parts.at(0).compare(VALUE_NOVALUE) == 0)
+           )
         {
-            entry.ArgValues.push_back( a_to_i( parts.at(i) ) );
+            if (entry.Custom == true)
+            {
+                Log( "Error: %s custom values are present but were not for %s\n", PROFILE_ENTRY_ARGS, PROFILE_ENTRY_CMDS );
+            }
+        }
+        else
+        {
+            if (entry.Custom == false)
+            {
+                Log( "Error: %s custom values are present but were not for %s\n", PROFILE_ENTRY_CMDS,PROFILE_ENTRY_ARGS );
+            }
+            else
+            {
+                for (i=0; i<parts.size(); i++)
+                {
+                    entry.ArgValues.push_back( a_to_i( parts.at(i) ) );
+                }
+            }
         }
     }
     else
@@ -604,14 +634,15 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
         fout << endl << "# Custom Entries Settings" << endl;
         for (index=0; index<Entries.size(); index++)
         {
+            // Entry path, name, and alias
+            fout << "{" << Entries.at(index).Path << Entries.at(index).Name
+                        << delimiter
+                        << Entries.at(index).Alias << "}" << endl;
+
+            // Entry command values
+            fout << PROFILE_ENTRY_CMDS;
             if (Entries.at(index).Custom == true)
             {
-                // Entry path, name, and alias
-                fout << "{" << Entries.at(index).Path << Entries.at(index).Name
-                            << delimiter
-                            << Entries.at(index).Alias << "}" << endl;
-                // Entry command values
-                fout << PROFILE_ENTRY_CMDS;
                 for (i=0; i<Entries.at(index).CmdValues.size(); i++)
                 {
                     if (i>0)
@@ -620,9 +651,17 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                     }
                     fout << Entries.at(index).CmdValues.at(i);
                 }
-                fout << endl;
-                // Entry argument values
-                fout << PROFILE_ENTRY_ARGS;
+            }
+            else
+            {
+                fout << VALUE_NOVALUE;
+            }
+            fout << endl;
+
+            // Entry argument values
+            fout << PROFILE_ENTRY_ARGS;
+            if (Entries.at(index).Custom == true)
+            {
                 for (i=0; i<Entries.at(index).ArgValues.size(); i++)
                 {
                     if (i>0)
@@ -631,8 +670,12 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                     }
                     fout << Entries.at(index).ArgValues.at(i);
                 }
-                fout << endl;
             }
+            else
+            {
+                fout << VALUE_NOVALUE;
+            }
+            fout << endl << endl;
         }
 
         fout.close();
