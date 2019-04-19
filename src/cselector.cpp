@@ -1889,7 +1889,10 @@ int8_t CSelector::RunExec( uint16_t selection )
     if (ItemsEntry.at(selection).Entry >= 0)
     {
         entry = &Profile.Entries.at(ItemsEntry.at(selection).Entry);
-        entry_found = true;
+        if ((entry != NULL) && (entry->Custom == true))
+        {
+            entry_found = true;
+        }
     }
 
     // Find a executable for file extension
