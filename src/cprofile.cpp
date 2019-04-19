@@ -564,6 +564,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                 }
                 fout << endl;
             }
+            fout << endl;
         }
 
         // Extensions
@@ -629,6 +630,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                 }
                 fout << endl;
             }
+            fout << endl;
         }
 
         // Entries
