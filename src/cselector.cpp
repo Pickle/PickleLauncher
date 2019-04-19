@@ -1933,25 +1933,25 @@ int8_t CSelector::RunExec( uint16_t selection )
         // Setup commands
         for (i=0; i<Profile.Commands.size(); i++)
         {
-            command += "cd " + Profile.Commands.at(i).Path + "; ";
-            command += Profile.Commands.at(i).Command;
+            //command += "cd " + Profile.Commands.at(i).Path + "; ";
+            command += Profile.Commands.at(i).Path + Profile.Commands.at(i).Command;
 
             for (j=0; j<Profile.Commands.at(i).Arguments.size(); j++)
             {
                 if (Profile.Commands.at(i).Arguments.at(j).Flag.compare(VALUE_NOVALUE) != 0)
                 {
-                    command += " " + Profile.Commands.at(i).Arguments.at(j).Flag;
+                    command += Profile.Commands.at(i).Arguments.at(j).Flag;
                 }
 
                 if (Profile.Commands.at(i).Arguments.at(j).Flag.compare(VALUE_FLAGONLY) !=0 )
                 {
                     if (entry_found==true)
                     {
-                        command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(j));
+                        command += Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(j));
                     }
                     else
                     {
-                        command += " " + Profile.Commands.at(i).Arguments.at(j).Values.at(Profile.Commands.at(i).Arguments.at(j).Default);
+                        command += Profile.Commands.at(i).Arguments.at(j).Values.at(Profile.Commands.at(i).Arguments.at(j).Default);
                     }
                 }
             }
