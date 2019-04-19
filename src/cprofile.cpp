@@ -49,6 +49,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
     string          line;
     ifstream        fin;
 
+    Log( "  from location %s\n", location.c_str() );
     fin.open(location.c_str(), ios_base::in);
 
     if (!fin)
@@ -693,6 +694,8 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
     int16_t ext_index;
     uint16_t i, j;
     listoption_t option;
+    string name;
+    string value;
 
     items.clear();
 
@@ -711,72 +714,102 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
         option.Extension = ext_index;
 
         // Scan for command arguments
-        for (i=0; i<Commands.size(); i++)
+        if (Commands.size() > 0)
         {
-            for (j=0; j<Commands.at(i).Arguments.size(); j++)
+            for (i=0; i<Commands.size(); i++)
             {
-                option.Name = Commands.at(i).Name + " " + Commands.at(i).Arguments.at(j).Flag + " ";
-                if (CheckRange( item.Entry, Entries.size() ))
+                for (j=0; j<Commands.at(i).Arguments.size(); j++)
                 {
-                    if (Entries.at(item.Entry).CmdValues.at(j) < Commands.at(i).Arguments.at(j).Names.size())
+                    option.Name = Commands.at(i).Name + " ";
+                    if (Commands.at(i).Arguments.at(j).Flag.compare(VALUE_NOVALUE) != 0)
                     {
-                        option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(j) );
+                        option.Name += Commands.at(i).Arguments.at(j).Flag + " ";
+                    }
+
+                    if (CheckRange( item.Entry, Entries.size() ))
+                    {
+                        if (Entries.at(item.Entry).CmdValues.size() > 0)
+                        {
+                            if (Entries.at(item.Entry).CmdValues.at(j) < Commands.at(i).Arguments.at(j).Names.size())
+                            {
+                                option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(j) );
+                            }
+                            else
+                            {
+                                option.Name += "Error: ScanEntry Entry out of range";
+                            }
+                        }
                     }
                     else
                     {
-                        option.Name += "Error: ScanEntry Entry out of range";
+                        if (CheckRange( Commands.at(i).Arguments.at(j).Default, Commands.at(i).Arguments.at(j).Names.size() ))
+                        {
+                            name = Commands.at(i).Arguments.at(j).Names.at( Commands.at(i).Arguments.at(j).Default );
+
+                            if (name.compare(VALUE_NOVALUE) != 0)
+                            {
+                                option.Name += name;
+                            }
+                        }
+                        else
+                        {
+                            option.Name += "Error: ScanEntry Default out of range";
+                        }
                     }
+                    option.Command = i;
+                    option.Argument = j;
+                    items.push_back(option);
                 }
-                else
-                {
-                    if (CheckRange( Commands.at(i).Arguments.at(j).Default, Commands.at(i).Arguments.at(j).Names.size() ))
-                    {
-                        option.Name += Commands.at(i).Arguments.at(j).Names.at( Commands.at(i).Arguments.at(j).Default );
-                    }
-                    else
-                    {
-                        option.Name += "Error: ScanEntry Default out of range";
-                    }
-                }
-                option.Command = i;
-                option.Argument = j;
-                items.push_back(option);
             }
         }
 
         // Scan for extension arguments
-        for (i=0; i<Extensions.at(ext_index).Arguments.size(); i++)
+        if (Extensions.size() > 0)
         {
-            option.Name = Extensions.at(ext_index).Arguments.at(i).Flag + " ";
-            if (CheckRange( item.Entry, Entries.size() ))
+            for (i=0; i<Extensions.at(ext_index).Arguments.size(); i++)
             {
-                if (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
-                    CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())    )
+                option.Name = Extensions.at(ext_index).Arguments.at(i).Flag + " ";
+                if (CheckRange( item.Entry, Entries.size() ))
                 {
-                    option.Name += Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) ) + " ";
-                    option.Name += Extensions.at(ext_index).Arguments.at(i).Values.at( Entries.at(item.Entry).ArgValues.at(i) );
+                    if (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
+                        CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())    )
+                    {
+                        option.Name += Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) ) + " ";
+                        option.Name += Extensions.at(ext_index).Arguments.at(i).Values.at( Entries.at(item.Entry).ArgValues.at(i) );
+                    }
+                    else
+                    {
+                        option.Name += "Error: bad custom entry";
+                    }
                 }
                 else
                 {
-                    option.Name += "Error: bad custom entry";
+                    if (CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
+                        CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Values.size())    )
+                    {
+                        name = Extensions.at(ext_index).Arguments.at(i).Names.at( Extensions.at(ext_index).Arguments.at(i).Default );
+
+                        if (name.compare(VALUE_NOVALUE) != 0)
+                        {
+                            option.Name += name + " ";
+                        }
+
+                        value = Extensions.at(ext_index).Arguments.at(i).Values.at( Extensions.at(ext_index).Arguments.at(i).Default );
+
+                        if (value.compare(VALUE_NOVALUE) != 0)
+                        {
+                            option.Name += value;
+                        }
+                    }
+                    else
+                    {
+                        option.Name += "Error: index not found";
+                    }
                 }
+                option.Command = -1;
+                option.Argument = i;
+                items.push_back(option);
             }
-            else
-            {
-                if (CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
-                    CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Values.size())    )
-                {
-                    option.Name += Extensions.at(ext_index).Arguments.at(i).Names.at( Extensions.at(ext_index).Arguments.at(i).Default ) + " ";
-                    option.Name += Extensions.at(ext_index).Arguments.at(i).Values.at( Extensions.at(ext_index).Arguments.at(i).Default );
-                }
-                else
-                {
-                    option.Name += "Error: index not found";
-                }
-            }
-            option.Command = -1;
-            option.Argument = i;
-            items.push_back(option);
         }
     }
     else
