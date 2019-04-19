@@ -1964,12 +1964,13 @@ int8_t CSelector::RunExec( uint16_t selection )
         // Check exe forces
         cmdpath = Profile.Extensions.at(ext_index).exePath;
         cmdname = Profile.Extensions.at(ext_index).exeName;
+
         for (j=0; j<Profile.Extensions.at(ext_index).ExeForces.size(); j++)
         {
             exeforce = &Profile.Extensions.at(ext_index).ExeForces.at(j);
             for (k=0; k<exeforce->Files.size(); k++)
             {
-                if (exeforce->Files.at(k).compare( lowercase(filename) ) == 0)
+                if (exeforce->Files.at(k).compare( filename ) == 0)
                 {
                     cmdpath = exeforce->exePath;
                     cmdname = exeforce->exeName;
