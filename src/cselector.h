@@ -58,8 +58,8 @@ using namespace std;
 #define EMPTY_DIR_LABEL         "<no files detected in dir>"    /** Ascii text for display if no files or dirs are detected. */
 #define EMPTY_ZIP_LABEL         "<no files detected in zip>"    /** Ascii text for display if no files in a zip are detected. */
 
-#define EVENT_LOOPS_ON          0                               /** Value set to loops to indentify an active event. */
-#define EVENT_LOOPS_OFF         0x7F                            /** Value set to loops to indentify an inactive event. */
+#define EVENT_LOOPS_ON          0                               /** Value set to loops to identify an active event. */
+#define EVENT_LOOPS_OFF         0x7F                            /** Value set to loops to identify an inactive event. */
 #define EVENT_LOOPS             10                              /** Number of loops an event must be active to be detected to be on. */
 #define IsEventOn(x)    ((EventPressCount.at(x) <= EVENT_LOOPS_ON)  ? true : false) /** Determines if an event is active. */
 #define IsEventOff(x)   ((EventPressCount.at(x) == EVENT_LOOPS_OFF) ? true : false) /** Determines if an event is inactive. */
@@ -76,7 +76,7 @@ enum MODES_T {
     MODE_SELECT_ENTRY=0,    /** Main mode for selecting an file to run. */
     MODE_SELECT_ARGUMENT,   /** Select an argument or command belonging to an entry. */
     MODE_SELECT_VALUE,      /** Select an value belonging to an argument. */
-    MODE_SELECT_OPTION,     /** Select an option for the laucher NOT COMPLETED. */
+    MODE_SELECT_OPTION,     /** Select an option for the launcher NOT COMPLETED. */
     MODE_TOTAL              /** Number of modes. */
 };
 
@@ -135,12 +135,12 @@ class CSelector : public CBase
          */
         void    CloseResources      ( int8_t result );
 
-        /** @brief Main loop of the application, polls input, runs current mode, and freshes the screen.
+        /** @brief Main loop of the application, polls input, runs current mode, and refreshes the screen.
          * @return -1  for no selection otherwise the entry selection number.
          */
         int16_t DisplayScreen       ( void );
 
-        /** @brief Check which screen rects a rect overlaps. The marked screen rects will only be updated for the screen.
+        /** @brief Check which screen rects and an rect overlaps. The marked screen rects will only be updated for the screen.
          */
         void    UpdateRect          ( int16_t x, int16_t y, int16_t w, int16_t h );
 
@@ -220,7 +220,7 @@ class CSelector : public CBase
          */
         int8_t  ConfigureButtons    ( void );
 
-        /** @brief Draws the buttons to the screen, in either fill color mode or bitmap's
+        /** @brief Draws the buttons to the screen, in either fill color mode or bitmaps
          * @param location : rect contains the starting coordinates for the buttons
          */
         int8_t  DrawButtons         ( SDL_Rect& location );
@@ -273,7 +273,7 @@ class CSelector : public CBase
         bool                    DrawState_ButtonR;
 
         uint8_t                 Mode;               /**< The current mode of the application. */
-        uint8_t                 LastSelectedEntry;  /**< Stores the index of the last seclected entry so scrolling can be restarted. */
+        uint8_t                 LastSelectedEntry;  /**< Stores the index of the last selected entry so scrolling can be restarted. */
         uint16_t                TextScrollOffset;   /**< Number of pixels to offset the entry text surface when it will blit to the screen. */
         uint16_t                CurScrollSpeed;     /**< Current number of loops used to decide when to offset the entry text scroll effect. */
         uint16_t                CurScrollPause;     /**< Current number of loops used to decide when to pause the entry text scroll effect. */
@@ -285,7 +285,7 @@ class CSelector : public CBase
         int16_t                 FPSDrawn;           /**< Number frames drawn to the screen per second. */
         int16_t                 FPSSkip;            /**< Number frames not drawn to the screen per second. */
         int16_t                 FPSSleep;
-        int32_t                 FrameCountTime;     /**< Tick count from measureing FPS. */
+        int32_t                 FrameCountTime;     /**< Tick count from measuring FPS. */
         int16_t                 LoopTimeAverage;    /**< Average loop time. */
 #endif
         int32_t                 FrameEndTime;       /**< Tick count at the end of the frame. */

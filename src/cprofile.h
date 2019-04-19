@@ -48,9 +48,9 @@ using namespace std;
 #define VALUE_FLAGONLY          "%flagonly%"        /** Profile keyword that identifies a empty option. */
 
 #define MAX_PATH                1024                /** Maximum path length. */
-#define ARG_MIN_COUNT           4                   /** Minumum options for an argument. */
-#define ARGFORCE_COUNT          3                   /** Minumum options for an argument force. */
-#define EXEFORCE_COUNT          2                   /** Minumum options for an exe force. */
+#define ARG_MIN_COUNT           4                   /** Minimum options for an argument. */
+#define ARGFORCE_COUNT          3                   /** Minimum options for an argument force. */
+#define EXEFORCE_COUNT          2                   /** Minimum options for an exe force. */
 #define TOTAL_LETTERS           27                  /** 26 alpha chars plus 1 for anything else */
 
 /** @brief Type of items that can be displayed in selection mode
@@ -66,7 +66,7 @@ enum ITEMTYPES_T {
 struct listitem_t {
     listitem_t() : Type(0), Entry(-1), Name("") {};
     uint8_t Type;                   /** @brief The type of item, file/dir/etc. */
-    int16_t Entry;                  /** @brief The entry index assoicated with this item. */
+    int16_t Entry;                  /** @brief The entry index associated with this item. */
     string  Name;                   /** @brief The name of the list item. */
 };
 
@@ -94,9 +94,9 @@ struct argument_t {
  */
 struct argforce_t {
     argforce_t() : Argument(0), Path(""), Value("") {};
-    uint8_t Argument;               /** @brief The index of the agrument to override */
+    uint8_t Argument;               /** @brief The index of the argument to override */
     string  Path;                   /** @brief The location of target files to override */
-    string  Value;                  /** @brief Value to overide the argument with */
+    string  Value;                  /** @brief Value to override the argument with */
 };
 
 /** @brief Data structure for overriding the exe path for listed files.
@@ -105,7 +105,7 @@ struct exeforce_t {
     exeforce_t() : exeName(""), exePath(""), Files() {};
     string              exeName;    /** @brief The executable name to pass the detected files to. */
     string              exePath;    /** @brief The path to the executable. */
-    vector<string>      Files;      /** @brief Value to overide the argument with */
+    vector<string>      Files;      /** @brief Value to override the argument with */
 };
 
 /** @brief Data structure for an command that is run before the application
@@ -124,11 +124,11 @@ struct extension_t {
     extension_t() : exeName(""), exePath(""), extName(), Blacklist(), Arguments(), ArgForces(), ExeForces() {};
     string              exeName;    /** @brief The executable name to pass the detected files to. */
     string              exePath;    /** @brief The path to the executable. */
-    vector<string>      extName;    /** @brief The extenion (usually 3 letters). */
+    vector<string>      extName;    /** @brief The extension (usually 3 letters). */
     vector<string>      Blacklist;  /** @brief List of filenames that will be filtered from the selection output. */
-    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the appliction. */
-    vector<argforce_t>  ArgForces;  /** @brief Overide arguments based on path. */
-    vector<exeforce_t>  ExeForces;  /** @brief Overide the exe path based on file names. */
+    vector<argument_t>  Arguments;  /** @brief Arguments to apply to the application. */
+    vector<argforce_t>  ArgForces;  /** @brief Override arguments based on path. */
+    vector<exeforce_t>  ExeForces;  /** @brief Override the exe path based on file names. */
 };
 
 /** @brief Data structure for a detected entry that has been set with custom arg/cmd values
@@ -138,7 +138,7 @@ struct entry_t {
     bool                Custom;     /** @brief Does the entry have values that are different than the defaults */
     string              Name;       /** @brief Name of the entry */
     string              Path;       /** @brief Path to the file */
-    string              Alias;      /** @brief Overides the actual filename for display */
+    string              Alias;      /** @brief Overrides the actual filename for display */
     vector<uint16_t>    CmdValues;  /** @brief The current selected values for the commands */
     vector<uint16_t>    ArgValues;  /** @brief The current selected values for the arguments */
 };
@@ -229,15 +229,15 @@ class CProfile : public CBase
         bool                LaunchableDirs;     /**< If true directories are considered as launchable, if false browsing is on. */
         string              LauncherPath;       /**< Path where the launcher was executed from. */
         string              LauncherName;       /**< Name of the launcher when executed. */
-        string              FilePath;           /**< Current path for searching for runable files. */
-        string              TargetApp;          /**< Label for the target appliction the launcher is executing. */
+        string              FilePath;           /**< Current path for searching for launchable files. */
+        string              TargetApp;          /**< Label for the target application the launcher is executing. */
         string              ZipFile;            /**< If not empty then the currently loaded zip file. */
         string              EntryFilter;
         vector<command_t>   Commands;           /**< Commands to be run before executing the target application. */
-        vector<extension_t> Extensions;         /**< File extensions runable by the target application. */
+        vector<extension_t> Extensions;         /**< File extensions launchable by the target application. */
         vector<entry_t>     Entries;            /**< Entries with custom values. */
         vector<int16_t>     AlphabeticIndices;  /**< Set to cause the current directory to be rescaned. */
-        CZip                Minizip;            /**< Handles examing and extracting zip files. */
+        CZip                Minizip;            /**< Handles examining and extracting zip files. */
 };
 
 bool CompareItems( listitem_t a, listitem_t b );    /**< Compare two listitems, which sort by type and then by name. */

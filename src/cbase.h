@@ -60,7 +60,7 @@ class CBase
         virtual ~CBase();
 
         /** @brief Logging function
-         * @param output : formating string to write to the log
+         * @param output : formatting string to write to the log
          */
         void            Log                 ( const char* output, ... );
 
@@ -70,7 +70,7 @@ class CBase
          */
         uint32_t        CheckRange          ( int32_t value, int32_t size );
 
-        /** @brief Convert color componets to a single integer
+        /** @brief Convert color components to a single integer
          * @param color : SDL color struct with color components
          * @return color in integer form
          */
@@ -90,7 +90,7 @@ class CBase
 
         /** @brief Convert string to all lowercase characters
          * @param text : string to convert
-         * @return copy fo string in all lowercase characters
+         * @return copy of string in all lowercase characters
          */
         string          lowercase           ( string text );
 
@@ -112,11 +112,11 @@ class CBase
         /** @brief Detect collision by determining if two rects overlap
          * @param boxA : first rect
          * @param boxB : second rect
-         * @return true if collision occured, false if it has not
+         * @return true if collision occurred, false if it has not
          */
         bool            CheckRectCollision  ( SDL_Rect* boxA, SDL_Rect* boxB );
 
-        /** @brief Separate string into different substring based on a delimter string
+        /** @brief Separate string into different substring based on a delimiter string
          * @param delimiter : string value to separate text string
          * @param text : string to separate
          * @param array : contains all of the separate string parts

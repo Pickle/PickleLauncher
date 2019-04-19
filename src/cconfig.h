@@ -39,14 +39,14 @@ using namespace std;
 #define SCREEN_HEIGHT       BASE_HEIGHT             /**< Default screen height for any other device (pixels). */
 #endif
 #define SCREEN_DEPTH        16                      /**< Default screen depth for any device (bits per pixel). */
-#define REFRESH_DELAY       10                      /**< Default screen depth for any device (millseconds). */
+#define REFRESH_DELAY       10                      /**< Default screen depth for any device (milliseconds). */
 #define MAX_ENTRIES         10                      /**< Default maximum entries in the display list. */
 #define SCROLL_SPEED        2                       /**< Default speed for scrolling text. */
 #define SCROLL_PAUSE_SPEED  100                     /**< Default speed for pausing scrolling text when left or right ends are reached. */
 #define DEAD_ZONE           10000                   /**< Default analog joystick deadzone. */
 #define DELIMITER           ";"                     /**< Default profile delimiter. */
-#define CFG_LBL_W           30                      /**< Mininum character width for the profile label. */
-#define CFG_VAL_W           30                      /**< Mininum character width for the profile value. */
+#define CFG_LBL_W           30                      /**< Minimum character width for the profile label. */
+#define CFG_VAL_W           30                      /**< Minimum character width for the profile value. */
 
 // GUI Options Defaults
 #define ENTRY_Y_DELTA       (2*ScreenRatioH)       /** Scaled pixel amount used between entries. */
@@ -57,9 +57,9 @@ using namespace std;
 #define BUTTONS_MAX_RIGHT   4                       /** Number of buttons on the right side of the GUI. */
 
 #define BUTTON_W_LEFT       (25*ScreenRatioW)       /** Scaled pixel width for buttons on the left side. */
-#define BUTTON_H_LEFT       (15*ScreenRatioH)       /** Scaled pixel hieght for buttons on the left side. */
+#define BUTTON_H_LEFT       (15*ScreenRatioH)       /** Scaled pixel height for buttons on the left side. */
 #define BUTTON_W_RIGHT      (80*ScreenRatioW)       /** Scaled pixel width for buttons on the right side. */
-#define BUTTON_H_RIGHT      (30*ScreenRatioH)       /** Scaled pixel hieght for buttons on the right side. */
+#define BUTTON_H_RIGHT      (30*ScreenRatioH)       /** Scaled pixel height for buttons on the right side. */
 
 #define PREVIEW_W           (80*ScreenRatioW)       /** Scaled pixel width for the preview image. */
 #define PREVIEW_H           (60*ScreenRatioH)       /** Scaled pixel height for the preview image. */
@@ -306,7 +306,7 @@ enum EVENT_T {
     EVENT_PAGE_DOWN,    /**<  3 Move selection one page down. */
     EVENT_DIR_UP,       /**<  4 Move current path one directory up. */
     EVENT_DIR_DOWN,     /**<  5 Move current path one directory down. */
-    EVENT_ZIP_MODE,     /**<  6 Mode to use when extracing files from a zip. */
+    EVENT_ZIP_MODE,     /**<  6 Mode to use when extracting files from a zip. */
     EVENT_CFG_APP,      /**<  7 Enter mode to configure the launcher. */
     EVENT_CFG_ITEM,     /**<  8 Enter mode to configure an entry. */
     EVENT_SET_ONE,      /**<  9 For an argument set selected value for the current entry. */
@@ -377,7 +377,7 @@ class CConfig : public CBase
         int8_t  Load        ( const string& location );
 
         /** @brief Save the configuration option from file
-         * @param location : path and filename to config file
+         * @param location : path and filename to the config file
          * @return 0 no errors or 1 if an error is detected
          */
         int8_t  Save        ( const string& location );
