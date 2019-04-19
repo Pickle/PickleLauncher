@@ -875,11 +875,11 @@ void CSelector::RescanItems( void )
         }
         else /* Multiple pages of entries */
         {
-            /* If the last seclected item is in the last page go back some entries to make full page */
+            /* If the last selected item is in the last page go back some entries to make full page */
             if (DisplayList.at(Mode).absolute > total-MAX_ENTRIES)
             {
                 DisplayList.at(Mode).first    = total-MAX_ENTRIES;
-                DisplayList.at(Mode).relative = MAX_ENTRIES-1;
+                DisplayList.at(Mode).relative = DisplayList.at(Mode).absolute - DisplayList.at(Mode).first;
             }
             else
             {
@@ -1206,7 +1206,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
             // Draw the selector pointer
             if (entry_index == DisplayList.at(Mode).relative)
             {
-                ApplyImage( location.x, location.y,  ImageSelectPointer, Screen, NULL );
+                ApplyImage( location.x, location.y, ImageSelectPointer, Screen, NULL );
 
                 // Reset scroll settings
                 if (entry_index != LastSelectedEntry)
@@ -1233,7 +1233,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                 {
                     RectEntries.at(entry_index).w = Config.DisplayListMaxWidth-location.x;
 
-                    if (Config.TextScrollOption == true && DisplayList.at(Mode).relative == entry_index)
+                    if ((Config.TextScrollOption == true) && (DisplayList.at(Mode).relative == entry_index))
                     {
                         offset = TextScrollOffset;
 
