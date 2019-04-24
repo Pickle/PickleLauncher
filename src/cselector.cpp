@@ -1950,7 +1950,7 @@ int8_t CSelector::RunExec( uint16_t selection )
                 {
                     if (entry_found==true)
                     {
-                        command += Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(j));
+                        command += Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(i));
                     }
                     else
                     {
