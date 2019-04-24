@@ -48,7 +48,7 @@ using namespace std;
 #define VALUE_FLAGONLY          "%flagonly%"        /** Profile keyword that identifies a empty option. */
 
 #define MAX_PATH                1024                /** Maximum path length. */
-#define ARG_MIN_COUNT           4                   /** Minimum options for an argument. */
+#define ARG_MIN_COUNT           5                   /** Minimum options for an argument. */
 #define ARGFORCE_COUNT          3                   /** Minimum options for an argument force. */
 #define EXEFORCE_COUNT          2                   /** Minimum options for an exe force. */
 #define TOTAL_LETTERS           27                  /** 26 alpha chars plus 1 for anything else */
@@ -83,8 +83,9 @@ struct listoption_t {
 /** @brief Data structure for an argument
  */
 struct argument_t {
-    argument_t() : Default(0), Flag(""), Names(), Values() {};
+    argument_t() : Default(0), Name(""), Flag(""), Names(), Values() {};
     uint8_t         Default;        /** @brief Index to the default value for the argument */
+    string          Name;           /** @brief Display name for the argument. */
     string          Flag;           /** @brief Flag that is used in the command line string which is followed by the value */
     vector<string>  Names;          /** @brief Names for the possible values */
     vector<string>  Values;         /** @brief Values for the argument */

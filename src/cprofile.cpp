@@ -180,12 +180,13 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
 
         if (parts.size() >= ARG_MIN_COUNT)
         {
-            arg.Flag    = parts.at(0);
-            arg.Default = a_to_i( parts.at(1) );
+            arg.Name    = parts.at(0);
+            arg.Flag    = parts.at(1);
+            arg.Default = a_to_i( parts.at(2) );
 
             arg.Names.clear();
             arg.Values.clear();
-            for (i=2; i<parts.size(); i++)
+            for (i=3; i<parts.size(); i++)
             {
                 arg.Names.push_back( parts.at(i) );
                 i++;
@@ -195,7 +196,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
                 }
                 else
                 {
-                    Log( "Error: Uneven number of argument names to values\n" );
+                    Log( "Error: Uneven number of argument names to values\n line:'%s'\n", line.c_str() );
                     return 1;
                 }
             }
@@ -212,7 +213,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: Not enough argument parts detected\n" );
+            Log( "Error: Not enough argument parts detected\n line:'%s'\n", line.c_str() );
             return 1;
         }
     }
@@ -285,12 +286,13 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
 
         if (parts.size() >= ARG_MIN_COUNT)
         {
-            arg.Flag    = parts.at(0);
-            arg.Default = a_to_i( parts.at(1) );
+            arg.Name    = parts.at(0);
+            arg.Flag    = parts.at(1);
+            arg.Default = a_to_i( parts.at(2) );
 
             arg.Names.clear();
             arg.Values.clear();
-            for (i=2; i<parts.size(); i++)
+            for (i=3; i<parts.size(); i++)
             {
                 arg.Names.push_back( parts.at(i) );
                 i++;
@@ -300,7 +302,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
                 }
                 else
                 {
-                    Log( "Error: Uneven number of argument names to values\n" );
+                    Log( "Error: Uneven number of argument names to values\n line:'%s'\n", line.c_str() );
                     return 1;
                 }
             }
@@ -317,7 +319,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: Not enough argument parts detected\n" );
+            Log( "Error: Not enough argument parts detected\n line:'%s'\n", line.c_str() );
             return 1;
         }
     }
@@ -503,7 +505,7 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
     entry.CmdValues.clear();
     for (i=0; i<Commands.size(); i++)
     {
-        for (j=0; j<Commands.size(); j++)
+        for (j=0; j<Commands.at(i).Arguments.size(); j++)
         {
             entry.CmdValues.push_back(Commands.at(i).Arguments.at(j).Default);
         }
@@ -554,8 +556,8 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
             // Arguments
             for (i=0; i<Commands.at(index).Arguments.size(); i++)
             {
-                fout << PROFILE_CMDARG << Commands.at(index).Arguments.at(i).Flag
-                                       << delimiter
+                fout << PROFILE_CMDARG << Commands.at(index).Arguments.at(i).Name << delimiter
+                                       << Commands.at(index).Arguments.at(i).Flag << delimiter
                                        << i_to_a(Commands.at(index).Arguments.at(i).Default);
                 for (j=0; j<Commands.at(index).Arguments.at(i).Values.size(); j++)
                 {
@@ -602,8 +604,8 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
             // Arguments
             for (i=0; i<Extensions.at(index).Arguments.size(); i++)
             {
-                fout << PROFILE_EXTARG << Extensions.at(index).Arguments.at(i).Flag
-                                       << delimiter
+                fout << PROFILE_EXTARG << Extensions.at(index).Arguments.at(i).Name << delimiter
+                                       << Extensions.at(index).Arguments.at(i).Flag << delimiter
                                        << i_to_a(Extensions.at(index).Arguments.at(i).Default);
                 for (j=0; j<Extensions.at(index).Arguments.at(i).Values.size(); j++)
                 {
@@ -702,7 +704,7 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
     items.clear();
 
     // Find the extension
-    if (item.Type == TYPE_DIR && LaunchableDirs == true)
+    if ((item.Type == TYPE_DIR) && (LaunchableDirs == true))
     {
         ext_index = FindExtension(EXT_DIRS);
     }
@@ -732,9 +734,9 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
                     {
                         if (Entries.at(item.Entry).CmdValues.size() > 0)
                         {
-                            if (Entries.at(item.Entry).CmdValues.at(j) < Commands.at(i).Arguments.at(j).Names.size())
+                            if (Entries.at(item.Entry).CmdValues.at(i) < Commands.at(i).Arguments.at(j).Names.size())
                             {
-                                option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(j) );
+                                option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(i) );
                             }
                             else
                             {
@@ -770,18 +772,48 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
         {
             for (i=0; i<Extensions.at(ext_index).Arguments.size(); i++)
             {
-                option.Name = Extensions.at(ext_index).Arguments.at(i).Flag + " ";
+                option.Name = Extensions.at(ext_index).Arguments.at(i).Name + ": " +
+                              Extensions.at(ext_index).Arguments.at(i).Flag + " ";
+
                 if (CheckRange( item.Entry, Entries.size() ))
                 {
-                    if (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
-                        CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())    )
+                    if (i > Entries.at(item.Entry).ArgValues.size()-1)
                     {
-                        option.Name += Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) ) + " ";
-                        option.Name += Extensions.at(ext_index).Arguments.at(i).Values.at( Entries.at(item.Entry).ArgValues.at(i) );
+                        Log( "Warning: ScanEntry the total arguments does not match the total values for the entry\n" );
+                        Log( "Warning: Adding an entry at 0. You should check the order of the arguments.\n" );
+                        Entries.at(item.Entry).ArgValues.push_back(0);
+                    }
+
+                    if (   (Extensions.at(ext_index).Arguments.at(i).Names.size() > 0)
+                        && (Extensions.at(ext_index).Arguments.at(i).Values.size() > 0)
+                       )
+                    {
+                        if (   CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size())
+                            && CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())
+                           )
+                        {
+                            name = Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) );
+
+                            if (name.compare(VALUE_NOVALUE) != 0)
+                            {
+                                option.Name += name + " ";
+                            }
+
+                            value = Extensions.at(ext_index).Arguments.at(i).Values.at( Entries.at(item.Entry).ArgValues.at(i) );
+
+                            if (value.compare(VALUE_NOVALUE) != 0)
+                            {
+                                option.Name += value;
+                            }
+                        }
+                        else
+                        {
+                            option.Name += "Error: bad custom entry";
+                        }
                     }
                     else
                     {
-                        option.Name += "Error: bad custom entry";
+                        option.Name += "No Values";
                     }
                 }
                 else
@@ -825,6 +857,7 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
 void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
 {
     uint16_t index;
+    string value;
 
     values.clear();
 
@@ -832,9 +865,17 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
     {
         if (CheckRange(item.Argument, Commands.at(item.Command).Arguments.size() ))
         {
-            for (index=0; index<Commands.at(item.Command).Arguments.at(item.Argument).Values.size(); index++)
+            for (index=0; index<Commands.at(item.Command).Arguments.at(item.Argument).Names.size(); index++)
             {
-                values.push_back( Commands.at(item.Command).Arguments.at(item.Argument).Values.at(index) );
+                value = Commands.at(item.Command).Arguments.at(item.Argument).Names.at(index);
+                if (value.compare(VALUE_NOVALUE) == 0)
+                {
+                    values.push_back( "Not Active" );
+                }
+                else
+                {
+                    values.push_back( value );
+                }
             }
         }
         else
@@ -847,9 +888,17 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
     {
         if (CheckRange( item.Argument, Extensions.at(item.Extension).Arguments.size() ))
         {
-            for (index=0; index<Extensions.at(item.Extension).Arguments.at(item.Argument).Values.size(); index++)
+            for (index=0; index<Extensions.at(item.Extension).Arguments.at(item.Argument).Names.size(); index++)
             {
-                values.push_back( Extensions.at(item.Extension).Arguments.at(item.Argument).Values.at(index) );
+                value = Extensions.at(item.Extension).Arguments.at(item.Argument).Names.at(index);
+                if (value.compare(VALUE_NOVALUE) == 0)
+                {
+                    values.push_back( "Not Active" );
+                }
+                else
+                {
+                    values.push_back( value );
+                }
             }
         }
         else
