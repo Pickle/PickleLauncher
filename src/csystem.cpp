@@ -57,7 +57,7 @@ CSystem::~CSystem()
 void CSystem::SetCPUClock( uint16_t& mhz )
 {
     // Range check
-    if (mhz == 0 || mhz > CPU_CLOCK_MAX)
+    if ((mhz == 0) || (mhz > CPU_CLOCK_MAX))
     {
         Log( "CPU mhz out of range, resetting to default. Value is now %d and allowed values should be between 0 and %d Mhz.\n", mhz, CPU_CLOCK_MAX );
         mhz = CPU_CLOCK_DEF;
@@ -68,7 +68,7 @@ void CSystem::SetCPUClock( uint16_t& mhz )
     execlp( command.c_str(), command.c_str(), NULL, NULL, NULL );
 
 #elif defined(WIZ) || defined(CAANOO)
-    if (memdev != 0 && memregs != 0)
+    if ((memdev != 0) && (memregs != 0))
     {
         volatile uint32_t *memregl = static_cast<volatile uint32_t*>((volatile void*)memregs);
         uint32_t mdiv, pdiv = 9, sdiv = 0;
@@ -84,7 +84,7 @@ void CSystem::SetCPUClock( uint16_t& mhz )
     }
 
 #elif defined(GP2X)
-    if (memdev != 0 && memregs != 0)
+    if ((memdev != 0) && (memregs != 0))
     {
         uint32_t v;
         uint32_t mdiv, pdiv=3, scale=0;

@@ -55,7 +55,7 @@ void CBase::Log( const char* output, ... )
 
 uint32_t CBase::CheckRange( int32_t value, int32_t size )
 {
-    if (value >= 0 && value < size)
+    if ((value >= 0) && (value < size))
     {
         return 1;
     }
@@ -165,7 +165,7 @@ bool CBase::CheckRectCollision( SDL_Rect* boxA, SDL_Rect* boxB )
     if (rightA <= leftB) return false;
     if (leftA >= rightB) return false;
     // If none of the sides from mCollisionbox are outside box
-    return true;    // Collision has occured
+    return true;    // Collision has occurred
 }
 
 void CBase::SplitString( const std::string& delimiter, const std::string& text, vector<string>& array )
@@ -256,7 +256,7 @@ void CBase::CheckPath( string& path )
 string CBase::cmdclean( string& cmdline )
 {
     string spchars = "\\`$();|{}&'\"*?<>[]!^~-#\n\r ";
-    for (uint i=0; i<spchars.length(); i++)
+    for (uint32_t i=0; i<spchars.length(); i++)
     {
         string curchar = spchars.substr(i,1);
         cmdline = strreplace(cmdline, curchar, "\\"+curchar);
@@ -277,7 +277,7 @@ string CBase::strreplace( string& orig, const string& search, const string& repl
 
 SDL_Surface* CBase::ScaleSurface( SDL_Surface *surface, uint16_t width, uint16_t height )
 {
-    if(!surface || !width || !height)
+    if((!surface) || (!width) || (!height))
         return 0;
 
     SDL_Surface *_ret = SDL_CreateRGBSurface(surface->flags, width, height, surface->format->BitsPerPixel,

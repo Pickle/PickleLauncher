@@ -135,7 +135,6 @@ CSelector::~CSelector()
 int8_t CSelector::Run( int32_t argc, char** argv )
 {
     int8_t result;
-    int16_t selection;
 
     result = 0;
 
@@ -152,7 +151,7 @@ int8_t CSelector::Run( int32_t argc, char** argv )
     // Display and poll the user for a selection
     if (result == 0)
     {
-        selection = DisplayScreen();
+        int16_t selection = DisplayScreen();
 
         // Setup a exec script for execution following termination of this application
         if (selection >= 0)
@@ -180,7 +179,6 @@ int8_t CSelector::Run( int32_t argc, char** argv )
 
 void CSelector::ProcessArguments( int argc, char** argv )
 {
-    uint8_t arg_index;
     string launcher;
     string argument;
 
@@ -199,7 +197,7 @@ void CSelector::ProcessArguments( int argc, char** argv )
 #endif
     Log( "Running from '%s' as '%s'\n", Profile.LauncherPath.c_str(), Profile.LauncherName.c_str() );
 
-    for (arg_index=0; arg_index<argc; arg_index++ )
+    for (uint8_t arg_index=0; arg_index<argc; arg_index++ )
     {
         argument = string(argv[arg_index]);
 
@@ -227,7 +225,6 @@ void CSelector::ProcessArguments( int argc, char** argv )
 
 int8_t CSelector::OpenResources( void )
 {
-    uint8_t button_index;
     uint32_t flags;
     string text;
 
@@ -239,7 +236,7 @@ int8_t CSelector::OpenResources( void )
     }
 
     Log( "Loading ziplist.\n" );
-    if (Config.UseZipSupport == true && Profile.Minizip.LoadUnzipList( ZipListPath ))
+    if ((Config.UseZipSupport == true) && (Profile.Minizip.LoadUnzipList( ZipListPath )))
     {
         Log( "Failed to load ziplist\n" );
         return 1;
@@ -316,7 +313,7 @@ int8_t CSelector::OpenResources( void )
 
     // Load images
     ImageBackground = LoadImage( Config.PathBackground );
-    for (button_index=0; button_index<Config.PathButtons.size(); button_index++)
+    for (uint8_t button_index=0; button_index<Config.PathButtons.size(); button_index++)
     {
         ImageButtons.at(button_index) = LoadImage( Config.PathButtons.at(button_index) );
     }
@@ -373,8 +370,6 @@ int8_t CSelector::OpenResources( void )
 
 void CSelector::CloseResources( int8_t result )
 {
-    uint8_t button_index;
-
     if (result == 0)
     {
         Config.Save( ConfigPath );
@@ -426,7 +421,7 @@ void CSelector::CloseResources( int8_t result )
 #if defined(DEBUG)
     FREE_IMAGE( ImageDebug );
 #endif
-    for (button_index=0; button_index<ImageButtons.size(); button_index++)
+    for (uint8_t button_index=0; button_index<ImageButtons.size(); button_index++)
     {
         FREE_IMAGE( ImageButtons.at(button_index) );
     }
@@ -444,7 +439,11 @@ void CSelector::CloseResources( int8_t result )
 
 int16_t CSelector::DisplayScreen( void )
 {
-    while (IsEventOff(EVENT_QUIT) == true && (IsEventOff(EVENT_SELECT) == true || Mode != MODE_SELECT_ENTRY) )
+    while (   (IsEventOff(EVENT_QUIT) == true)
+           && (   (IsEventOff(EVENT_SELECT) == true)
+               || (Mode != MODE_SELECT_ENTRY)
+              )
+          )
     {
         // Get user input
         if (PollInputs())
@@ -554,7 +553,7 @@ void CSelector::UpdateScreen( void )
     Redraw = true;
 #endif
 
-    if (SkipFrame == false && Redraw == true)
+    if ((SkipFrame == false) && (Redraw == true))
     {
         if (Config.ScreenFlip == true)
         {
@@ -640,8 +639,11 @@ void CSelector::SelectMode( void )
             {
                 if (ItemsEntry.size()>0)
                 {
-                    if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_FILE ||
-                       (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_DIR && Profile.LaunchableDirs == true))
+                    if (   (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_FILE)
+                        || (   (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Type == TYPE_DIR)
+                            && (Profile.LaunchableDirs == true)
+                           )
+                       )
                     {
                         Mode = MODE_SELECT_ARGUMENT;
                     }
@@ -711,7 +713,7 @@ int8_t CSelector::DisplaySelector( void )
         RefreshList     = false;
     }
 
-    if (Redraw == true || CurScrollPause != 0 || CurScrollSpeed != 0 || TextScrollOffset != 0)
+    if ((Redraw == true) || (CurScrollPause != 0) || (CurScrollSpeed != 0) || (TextScrollOffset != 0))
     {
         if (Config.ScreenFlip == true)
         {
@@ -763,7 +765,7 @@ int8_t CSelector::DisplaySelector( void )
         }
 
         // Custom mouse pointer
-        if (Config.ShowPointer == true && ImagePointer != NULL)
+        if ((Config.ShowPointer == true) && (ImagePointer != NULL))
         {
             ApplyImage( Mouse.x, Mouse.y, ImagePointer, Screen, NULL );
         }
@@ -926,12 +928,10 @@ void CSelector::PopulateList( void )
 
 void CSelector::PopModeEntry( void )
 {
-    uint16_t i;
-    uint16_t index;
-
-    for (i=0; i<ListNames.size(); i++)
+    for (uint16_t i=0; i<ListNames.size(); i++)
     {
-        index = DisplayList.at( MODE_SELECT_ENTRY ).first+i;
+        uint16_t index = DisplayList.at( MODE_SELECT_ENTRY ).first+i;
+
         if (CheckRange( index, ItemsEntry.size() ))
         {
             ListNames.at(i).text.clear();
@@ -977,12 +977,9 @@ void CSelector::PopModeEntry( void )
 
 void CSelector::PopModeArgument( void )
 {
-    uint16_t i;
-    uint16_t index;
-
-    for (i=0; i<ListNames.size(); i++)
+    for (uint16_t i=0; i<ListNames.size(); i++)
     {
-        index = DisplayList.at(MODE_SELECT_ARGUMENT).first+i;
+        uint16_t index = DisplayList.at(MODE_SELECT_ARGUMENT).first+i;
 
         if (CheckRange( index, ItemsArgument.size() ))
         {
@@ -1008,19 +1005,15 @@ void CSelector::PopModeArgument( void )
 
 void CSelector::PopModeValue( void )
 {
-    uint16_t i;
-    uint16_t index;
-    int16_t defvalue;
-    int16_t entry;
     listoption_t argument;
 
     if (CheckRange(DisplayList.at(MODE_SELECT_ARGUMENT).absolute, ItemsArgument.size() ))
     {
         argument = ItemsArgument.at(DisplayList.at(MODE_SELECT_ARGUMENT).absolute);
 
-        for (i=0; i<ListNames.size(); i++)
+        for (uint16_t i=0; i<ListNames.size(); i++)
         {
-            index = DisplayList.at(MODE_SELECT_VALUE).first+i;
+            uint16_t index = DisplayList.at(MODE_SELECT_VALUE).first+i;
 
             if (CheckRange( index, ItemsValue.size() ))
             {
@@ -1036,6 +1029,8 @@ void CSelector::PopModeValue( void )
                 }
 
                 // Detect the default value
+                int16_t defvalue = 0;
+
                 if (ItemsArgument.at(DisplayList.at(MODE_SELECT_ARGUMENT).absolute).Command >= 0)
                 {
                     if (SetAllEntryValue == true)
@@ -1052,6 +1047,7 @@ void CSelector::PopModeValue( void )
                     }
                     defvalue = Profile.Extensions.at(argument.Extension).Arguments.at(argument.Argument).Default;
                 }
+
                 if (index==defvalue)
                 {
                     ListNames.at(i).text += '*';
@@ -1064,7 +1060,8 @@ void CSelector::PopModeValue( void )
                     // A custom value has been selected, so create a new entry
                     if (SetOneEntryValue == true)
                     {
-                        entry = Profile.AddEntry( argument, ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Name );
+                        int16_t entry = Profile.AddEntry( argument, ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Name );
+
                         if (entry>0)
                         {
                             ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry = entry;
@@ -1084,7 +1081,7 @@ void CSelector::PopModeValue( void )
                 {
                     if (ItemsArgument.at(DisplayList.at(MODE_SELECT_ARGUMENT).absolute).Command >= 0)
                     {
-                        if (SetOneEntryValue == true || SetAllEntryValue == true)
+                        if ((SetOneEntryValue == true) || (SetAllEntryValue == true))
                         {
                             Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).CmdValues.at(argument.Command+argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
                         }
@@ -1095,7 +1092,7 @@ void CSelector::PopModeValue( void )
                     }
                     else
                     {
-                        if (SetOneEntryValue == true || SetAllEntryValue == true)
+                        if ((SetOneEntryValue == true) || (SetAllEntryValue == true))
                         {
                             Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).ArgValues.at(argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
                         }
@@ -1136,7 +1133,7 @@ void CSelector::LoadPreview( const string& name )
     FREE_IMAGE( ImagePreview );
 
     filename = Config.PreviewsPath + "/" + name.substr( 0, name.find_last_of(".")) + ".png";
-    preview = LoadImage( filename.c_str() );
+    preview = LoadImage( filename );
     if (preview != NULL)
     {
         ImagePreview = ScaleSurface( preview, Config.PreviewWidth, Config.PreviewHeight );
@@ -1147,9 +1144,7 @@ void CSelector::LoadPreview( const string& name )
 
 int8_t CSelector::DrawNames( SDL_Rect& location )
 {
-    uint16_t entry_index;
     uint16_t startx, starty;
-    int16_t offset;
     SDL_Rect rect_clip;
     SDL_Surface* text_surface = NULL;
 
@@ -1162,10 +1157,10 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
     startx = location.x;
     starty = location.y;
 
-    if (ListNames.size() <= 0)
+    if (ListNames.size() == 0)
     {
         // Empty directories or zip files
-        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+        if ((Config.UseZipSupport == true) && (Profile.ZipFile.length() > 0))
         {
             text_surface = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), EMPTY_ZIP_LABEL, Config.Colors.at(COLOR_BLACK) );
         }
@@ -1199,10 +1194,8 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
     }
     else
     {
-        for (entry_index=0; entry_index<ListNames.size(); entry_index++)
+        for (uint16_t entry_index=0; entry_index<ListNames.size(); entry_index++)
         {
-            offset = 0;
-
             // Draw the selector pointer
             if (entry_index == DisplayList.at(Mode).relative)
             {
@@ -1223,6 +1216,8 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
 
             if (text_surface != NULL)
             {
+                int16_t offset = 0;
+
                 location.x += ImageSelectPointer->w;
                 RectEntries.at(entry_index).x = location.x;
                 RectEntries.at(entry_index).y = location.y;
@@ -1267,7 +1262,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                                 TextScrollDir   = false;
                                 CurScrollPause  = 2;
                             }
-                            else if (TextScrollOffset <= 0)
+                            else if (TextScrollOffset == 0)
                             {
                                 TextScrollDir   = true;
                                 CurScrollPause  = 2;
@@ -1365,8 +1360,6 @@ void CSelector::DrawBackground( void )
 
 int8_t CSelector::ConfigureButtons( void )
 {
-    uint16_t i;
-
     // Common button mappings
     ButtonModesLeft.at(0) = EVENT_ONE_UP;
     ButtonModesLeft.at(1) = EVENT_PAGE_UP;
@@ -1381,7 +1374,7 @@ int8_t CSelector::ConfigureButtons( void )
         case MODE_SELECT_ENTRY:
             ButtonModesLeft.at(4) = EVENT_DIR_UP;
             ButtonModesLeft.at(5) = EVENT_DIR_DOWN;
-            if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+            if ((Config.UseZipSupport == true) && (Profile.ZipFile.length() > 0))
             {
                 ButtonModesLeft.at(6) = EVENT_ZIP_MODE;
             }
@@ -1429,7 +1422,7 @@ int8_t CSelector::ConfigureButtons( void )
     }
 
     // Overides for button driven by config options
-    for (i=0; i<ButtonModesLeft.size(); i++ )
+    for (uint16_t i=0; i<ButtonModesLeft.size(); i++ )
     {
         if (Config.ButtonModesLeftEnable.at(i) == false)
         {
@@ -1437,7 +1430,7 @@ int8_t CSelector::ConfigureButtons( void )
         }
     }
 
-    for (i=0; i<ButtonModesRight.size(); i++ )
+    for (uint16_t i=0; i<ButtonModesRight.size(); i++ )
     {
         if (Config.ButtonModesRightEnable.at(i) == false)
         {
@@ -1450,7 +1443,6 @@ int8_t CSelector::ConfigureButtons( void )
 
 int8_t CSelector::DrawButtons( SDL_Rect& location )
 {
-    uint8_t button;
     SDL_Rect preview;
 
     if (Config.AutoLayout == false)
@@ -1462,7 +1454,7 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
     // Draw buttons on left
     if (DrawState_ButtonL == true)
     {
-        for (button=0; button<BUTTONS_MAX_LEFT; button++)
+        for (uint8_t button=0; button<BUTTONS_MAX_LEFT; button++)
         {
             RectButtonsLeft.at(button).x = location.x;
             RectButtonsLeft.at(button).y = location.y+(Config.ButtonHeightLeft*button)+(Config.EntryYOffset*button);
@@ -1485,7 +1477,7 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
     // Draw buttons on right
     if (DrawState_ButtonR == true)
     {
-        for (button=0; button<BUTTONS_MAX_RIGHT; button++)
+        for (uint8_t button=0; button<BUTTONS_MAX_RIGHT; button++)
         {
             if (Config.AutoLayout == false)
             {
@@ -1513,7 +1505,7 @@ int8_t CSelector::DrawButtons( SDL_Rect& location )
     }
 
     //Display the preview graphic
-    if (Mode == MODE_SELECT_ENTRY && DrawState_Preview == true)
+    if ((Mode == MODE_SELECT_ENTRY) && (DrawState_Preview == true))
     {
         preview.x = Config.ScreenWidth-Config.PreviewWidth-Config.EntryXOffset;
         preview.y = Config.ScreenHeight-Config.PreviewHeight-(Config.ButtonHeightRight*3)-(Config.EntryYOffset*6);
@@ -1543,16 +1535,15 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
         SDL_FillRect( Screen, &location, rgb_to_int(Config.Colors.at(Config.ColorButton)) );
     }
 
-
     if (Config.ShowLabels == true)
     {
         text_surface = TTF_RenderText_Solid( font, LabelButtons.at(button).c_str(), Config.Colors.at(Config.ColorFontButton) );
 
-        rect_text.x = location.x + ((location.w-text_surface->w)/2);
-        rect_text.y = location.y + ((location.h-text_surface->h)/2);
-
         if (text_surface != NULL)
         {
+            rect_text.x = location.x + ((location.w-text_surface->w)/2);
+            rect_text.y = location.y + ((location.h-text_surface->h)/2);
+
             ApplyImage( rect_text.x, rect_text.y, text_surface, Screen, NULL );
 
             FREE_IMAGE( text_surface );
@@ -1571,7 +1562,6 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     int16_t         total;
     int16_t         prev_width;
     int16_t         prev_height;
-    int16_t         max_height;
     string          text;
     SDL_Rect        box, clip;
 
@@ -1599,8 +1589,10 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     // Entry Filter and Filepath (they can overlap so both are drawn when either change)
     if (Mode == MODE_SELECT_ENTRY)
     {
-        if (DrawState_FilePath == true || DrawState_Filter == true )
+        if ((DrawState_FilePath == true) || (DrawState_Filter == true))
         {
+            int16_t max_height;
+
             // Entry Filter
             if (ImageFilter != NULL)
             {
@@ -1774,7 +1766,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     // Zip extract option
     if (DrawState_ZipMode == true)
     {
-        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+        if ((Config.UseZipSupport == true) && (Profile.ZipFile.length() > 0))
         {
             if (ImageZipMode != NULL)
             {
@@ -1811,7 +1803,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
             box.x = 5*Config.EntryXOffset;
             box.y = Config.ScreenHeight - ImageZipMode->h - Config.EntryYOffset;
 
-            if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+            if ((Config.UseZipSupport == true) && (Profile.ZipFile.length() > 0))
             {
                 ApplyImage( box.x, box.y, ImageZipMode, Screen, NULL );
             }
@@ -1863,7 +1855,6 @@ int8_t CSelector::DrawText( SDL_Rect& location )
 int8_t CSelector::RunExec( uint16_t selection )
 {
     bool entry_found;
-    uint16_t i, j, k;
     int16_t ext_index;
     string filename;
     string filepath;
@@ -1913,7 +1904,7 @@ int8_t CSelector::RunExec( uint16_t selection )
         command.clear();
 
         // Unzip if needed
-        if (Config.UseZipSupport == true && Profile.ZipFile.length() > 0)
+        if ((Config.UseZipSupport == true) && (Profile.ZipFile.length() > 0))
         {
             mkdir( Config.ZipPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
             if (ExtractAllFiles == true)    // Extract all
@@ -1934,12 +1925,12 @@ int8_t CSelector::RunExec( uint16_t selection )
 
 
         // Setup commands
-        for (i=0; i<Profile.Commands.size(); i++)
+        for (uint16_t i=0; i<Profile.Commands.size(); i++)
         {
             //command += "cd " + Profile.Commands.at(i).Path + "; ";
             command += Profile.Commands.at(i).Path + Profile.Commands.at(i).Command;
 
-            for (j=0; j<Profile.Commands.at(i).Arguments.size(); j++)
+            for (uint16_t j=0; j<Profile.Commands.at(i).Arguments.size(); j++)
             {
                 if (Profile.Commands.at(i).Arguments.at(j).Flag.compare(VALUE_NOVALUE) != 0)
                 {
@@ -1965,10 +1956,10 @@ int8_t CSelector::RunExec( uint16_t selection )
         cmdpath = Profile.Extensions.at(ext_index).exePath;
         cmdname = Profile.Extensions.at(ext_index).exeName;
 
-        for (j=0; j<Profile.Extensions.at(ext_index).ExeForces.size(); j++)
+        for (uint16_t j=0; j<Profile.Extensions.at(ext_index).ExeForces.size(); j++)
         {
             exeforce = &Profile.Extensions.at(ext_index).ExeForces.at(j);
-            for (k=0; k<exeforce->Files.size(); k++)
+            for (uint16_t k=0; k<exeforce->Files.size(); k++)
             {
                 if (exeforce->Files.at(k).compare( filename ) == 0)
                 {
@@ -1985,13 +1976,13 @@ int8_t CSelector::RunExec( uint16_t selection )
         command += "./" + cmdname;
 
         // Setup arguments
-        for (i=0; i<Profile.Extensions.at(ext_index).Arguments.size(); i++)
+        for (uint16_t i=0; i<Profile.Extensions.at(ext_index).Arguments.size(); i++)
         {
             value.clear();
             argument = &Profile.Extensions.at(ext_index).Arguments.at(i);
 
             // Check arg forces
-            for (j=0; j<Profile.Extensions.at(ext_index).ArgForces.size(); j++)
+            for (uint16_t j=0; j<Profile.Extensions.at(ext_index).ArgForces.size(); j++)
             {
                 argforce = &Profile.Extensions.at(ext_index).ArgForces.at(j);
                 if (argforce->Path.compare( Profile.FilePath ) == 0)
@@ -2005,7 +1996,7 @@ int8_t CSelector::RunExec( uint16_t selection )
                 }
             }
             // Check arguments for default value or custom entry value
-            if (value.length() <= 0 )
+            if (value.length() == 0 )
             {
                 if (entry_found==true)
                 {
@@ -2097,7 +2088,7 @@ int8_t CSelector::RunExec( uint16_t selection )
     SplitString( ";", command, commands );
 
     Log( "Running command start:\n");
-    for( i=0; i<commands.size(); i++)
+    for(uint16_t i=0; i<commands.size(); i++)
     {
         Log( "%02d '%s'\n", i, commands.at(i).c_str());
     }
@@ -2119,11 +2110,10 @@ int8_t CSelector::RunExec( uint16_t selection )
 int8_t CSelector::PollInputs( void )
 {
     int16_t     newsel;
-    uint16_t    index;
     string      keyname;
     SDL_Event   event;
 
-    for (index=0; index<EventReleased.size(); index++)
+    for (uint16_t index=0; index<EventReleased.size(); index++)
     {
         if (EventReleased.at(index) == true)
         {
@@ -2156,7 +2146,7 @@ int8_t CSelector::PollInputs( void )
         {
             case SDL_KEYDOWN:
                 keyname = SDL_GetKeyName( event.key.keysym.sym );
-                if (keyname.length() == 1 || event.key.keysym.sym == SDLK_BACKSPACE)
+                if ((keyname.length() == 1) || (event.key.keysym.sym == SDLK_BACKSPACE))
                 {
                     if (Config.EntryFastMode == ENTRY_FAST_MODE_ALPHA)
                     {
@@ -2165,7 +2155,7 @@ int8_t CSelector::PollInputs( void )
                     }
                     else if (Config.EntryFastMode == ENTRY_FAST_MODE_FILTER)
                     {
-                        if (event.key.keysym.sym==SDLK_BACKSPACE || event.key.keysym.sym==SDLK_DELETE)
+                        if ((event.key.keysym.sym==SDLK_BACKSPACE) || (event.key.keysym.sym==SDLK_DELETE))
                         {
                             if (Profile.EntryFilter.length() > 0)
                             {
@@ -2182,7 +2172,7 @@ int8_t CSelector::PollInputs( void )
                 }
                 else
                 {
-                    for (index=0; index<EventPressCount.size(); index++)
+                    for (uint16_t index=0; index<EventPressCount.size(); index++)
                     {
                         if (event.key.keysym.sym == Config.KeyMaps.at(index))
                         {
@@ -2200,7 +2190,7 @@ int8_t CSelector::PollInputs( void )
                 break;
 
             case SDL_KEYUP:
-                for (index=0; index<EventReleased.size(); index++)
+                for (uint16_t index=0; index<EventReleased.size(); index++)
                 {
                     if (event.key.keysym.sym == Config.KeyMaps.at(index))
                     {
@@ -2218,7 +2208,7 @@ int8_t CSelector::PollInputs( void )
                 break;
 
             case SDL_JOYBUTTONDOWN:
-                for (index=0; index<EventPressCount.size(); index++)
+                for (uint16_t index=0; index<EventPressCount.size(); index++)
                 {
                     if (event.jbutton.button == Config.JoyMaps.at(index))
                     {
@@ -2235,7 +2225,7 @@ int8_t CSelector::PollInputs( void )
                 break;
 
             case SDL_JOYBUTTONUP:
-                for (index=0; index<EventReleased.size(); index++)
+                for (uint16_t index=0; index<EventReleased.size(); index++)
                 {
                     if (event.jbutton.button == Config.JoyMaps.at(index))
                     {
@@ -2308,7 +2298,7 @@ int8_t CSelector::PollInputs( void )
                 Mouse.x  = event.motion.x;
                 Mouse.y  = event.motion.y;
 
-                for (index=0; index<RectEntries.size(); index++)
+                for (uint16_t index=0; index<RectEntries.size(); index++)
                 {
                     if (CheckRectCollision( &Mouse, &RectEntries.at(index) ))
                     {
@@ -2337,7 +2327,7 @@ int8_t CSelector::PollInputs( void )
                     case SDL_BUTTON_RIGHT:;
                         Mouse.x  = event.button.x;
                         Mouse.y  = event.button.y;
-                        for (index=0; index<RectButtonsLeft.size(); index++)
+                        for (uint16_t index=0; index<RectButtonsLeft.size(); index++)
                         {
                             if (ButtonModesLeft.at(index)!=EVENT_NONE)
                             {
@@ -2350,7 +2340,7 @@ int8_t CSelector::PollInputs( void )
                                 }
                             }
                         }
-                        for (index=0; index<RectButtonsRight.size(); index++)
+                        for (uint16_t index=0; index<RectButtonsRight.size(); index++)
                         {
                             if (ButtonModesRight.at(index)!=EVENT_NONE)
                             {
@@ -2385,7 +2375,7 @@ int8_t CSelector::PollInputs( void )
                         Mouse.x  = event.button.x;
                         Mouse.y  = event.button.y;
 
-                        for (index=0; index<EventReleased.size(); index++)
+                        for (uint16_t index=0; index<EventReleased.size(); index++)
                         {
                             EventReleased.at(index) = true;
                         }
@@ -2432,9 +2422,9 @@ int8_t CSelector::PollInputs( void )
     if (Mode == MODE_SELECT_ENTRY)
     {
         // Go up into a dir
-        if (Rescan == false && IsEventOn(EVENT_DIR_UP) == true)
+        if ((Rescan == false) && (IsEventOn(EVENT_DIR_UP) == true))
         {
-            if (Config.UseZipSupport == 1 && Profile.ZipFile.length() > 0)
+            if ((Config.UseZipSupport == 1) && (Profile.ZipFile.length() > 0))
             {
                 ZipUp();
             }
@@ -2448,7 +2438,11 @@ int8_t CSelector::PollInputs( void )
         }
 
         // Go down into a dir
-        if (Rescan == false && ((IsEventOn(EVENT_DIR_DOWN) == true) || (IsEventOn(EVENT_SELECT) == true)))
+        if (   (Rescan == false)
+            && (   (IsEventOn(EVENT_DIR_DOWN) == true)
+                || (IsEventOn(EVENT_SELECT) == true)
+               )
+           )
         {
             if (ItemsEntry.size()>0)
             {
@@ -2459,7 +2453,7 @@ int8_t CSelector::PollInputs( void )
                         DirectoryDown();
                     }
                 }
-                else if (Config.UseZipSupport == 1 && ItemsEntry.at(DisplayList.at(Mode).absolute).Type == TYPE_ZIP)
+                else if ((Config.UseZipSupport == 1) && (ItemsEntry.at(DisplayList.at(Mode).absolute).Type == TYPE_ZIP))
                 {
                     ZipDown();
                 }

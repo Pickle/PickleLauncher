@@ -393,7 +393,6 @@ void CZip::DelUnzipFiles( void )
 
 int8_t CZip::SaveUnzipList( const string& location )
 {
-    uint8_t i;
     ofstream   fout;
 
     fout.open(location.c_str(), ios_base::trunc);
@@ -407,7 +406,7 @@ int8_t CZip::SaveUnzipList( const string& location )
     // Write out the profile
     if (fout.is_open())
     {
-        for (i=0; i<UnzipFiles.size(); i++)
+        for (uint8_t i=0; i<UnzipFiles.size(); i++)
         {
             if (UnzipFiles.at(i).length()>0)
             {

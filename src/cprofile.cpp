@@ -45,7 +45,6 @@ CProfile::~CProfile()
 
 int8_t CProfile::Load( const string& location, const string& delimiter )
 {
-    bool            readline;
     string          line;
     ifstream        fin;
 
@@ -61,7 +60,8 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
     // Read in the profile
     if (fin.is_open())
     {
-        readline = true;
+        bool readline = true;
+
         while (!fin.eof())
         {
             if (readline == true)
@@ -83,7 +83,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     readline = true;
                 }
                 else    // Commands
-                if (line.at(0) == '<' && line.at(line.length()-1) == '>')
+                if ((line.at(0) == '<') && (line.at(line.length()-1) == '>'))
                 {
                     if (LoadCmd(fin, line, delimiter))
                     {
@@ -93,7 +93,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     readline = false;
                 }
                 else    // Extensions
-                if (line.at(0) == '[' && line.at(line.length()-1) == ']')
+                if ((line.at(0) == '[') && (line.at(line.length()-1) == ']'))
                 {
                     if (LoadExt(fin, line, delimiter))
                     {
@@ -103,7 +103,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                     readline = false;
                 }
                 else    // Entries
-                if (line.at(0) == '{' && line.at(line.length()-1) == '}')
+                if ((line.at(0) == '{') && (line.at(line.length()-1) == '}'))
                 {
                     if (LoadEntry(fin, line, delimiter))
                     {
@@ -131,12 +131,12 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
     }
 
     // Sanity checks
-    if (FilePath.length()<=0)
+    if (FilePath.length() == 0)
     {
         Log( "Error: file path was not read from profile\n" );
         return 1;
     }
-    if (Extensions.size()<=0)
+    if (Extensions.size() == 0)
     {
         Log( "Error: no extensions were read from profile\n" );
         return 1;
@@ -147,7 +147,6 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
 
 int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
 {
-    uint8_t         i;
     uint8_t         count;
     command_t       cmd;
     argument_t      arg;
@@ -186,7 +185,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
 
             arg.Names.clear();
             arg.Values.clear();
-            for (i=3; i<parts.size(); i++)
+            for (uint8_t i=3; i<parts.size(); i++)
             {
                 arg.Names.push_back( parts.at(i) );
                 i++;
@@ -230,7 +229,6 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
 
 int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
 {
-    uint8_t         i;
     uint8_t         count;
     vector<string>  parts;
     extension_t     ext;
@@ -243,7 +241,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     extensions = line.substr(1, line.length()-2);
     SplitString( delimiter, extensions, parts );
     ext.extName.clear();
-    for (i=0; i<parts.size(); i++)
+    for (uint8_t i=0; i<parts.size(); i++)
     {
         ext.extName.push_back( lowercase(parts.at(i)) );
     }
@@ -292,7 +290,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
 
             arg.Names.clear();
             arg.Values.clear();
-            for (i=3; i<parts.size(); i++)
+            for (uint8_t i=3; i<parts.size(); i++)
             {
                 arg.Names.push_back( parts.at(i) );
                 i++;
@@ -364,7 +362,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
             CheckPath( exeforce.exePath );
 
             exeforce.Files.clear();
-            for (i=1; i<parts.size(); i++)
+            for (uint8_t i=1; i<parts.size(); i++)
             {
                 exeforce.Files.push_back( parts.at(i) );
             }
@@ -382,7 +380,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     // Check for directory exe
     if (ext.exeName.length() > 0)
     {
-        for (i=0; i<ext.extName.size(); i++)
+        for (uint8_t i=0; i<ext.extName.size(); i++)
         {
             if (CheckExtension( ext.extName.at(i), EXT_DIRS) >= 0)
             {
@@ -396,7 +394,6 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
 
 int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter )
 {
-    uint16_t            i;
     string::size_type   pos1,pos2;
     entry_t             entry;
     vector<string>      parts;
@@ -434,7 +431,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     {
         SplitString( delimiter, line, parts );
 
-        if (   (parts.size() <= 0)
+        if (   (parts.size() == 0)
             || (parts.at(0).compare(VALUE_NOVALUE) == 0)
            )
         {
@@ -442,7 +439,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
         }
         else
         {
-            for (i=0; i<parts.size(); i++)
+            for (uint8_t i=0; i<parts.size(); i++)
             {
                 entry.CmdValues.push_back( a_to_i( parts.at(i) ) );
             }
@@ -460,7 +457,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     {
         SplitString( delimiter, line, parts );
 
-        if (   (parts.size() <= 0)
+        if (   (parts.size() == 0)
             || (parts.at(0).compare(VALUE_NOVALUE) == 0)
            )
         {
@@ -477,7 +474,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
             }
             else
             {
-                for (i=0; i<parts.size(); i++)
+                for (uint8_t i=0; i<parts.size(); i++)
                 {
                     entry.ArgValues.push_back( a_to_i( parts.at(i) ) );
                 }
@@ -496,16 +493,15 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
 
 int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
 {
-    uint16_t i, j;
     entry_t entry;
 
     entry.Name      = name;
     entry.Path      = FilePath;
     entry.Custom    = true;
     entry.CmdValues.clear();
-    for (i=0; i<Commands.size(); i++)
+    for (uint16_t i=0; i<Commands.size(); i++)
     {
-        for (j=0; j<Commands.at(i).Arguments.size(); j++)
+        for (uint16_t j=0; j<Commands.at(i).Arguments.size(); j++)
         {
             entry.CmdValues.push_back(Commands.at(i).Arguments.at(j).Default);
         }
@@ -513,7 +509,7 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
     entry.ArgValues.clear();
     if (CheckRange( argument.Extension, Extensions.size() ))
     {
-        for (i=0; i<Extensions.at(argument.Extension).Arguments.size(); i++)
+        for (uint16_t i=0; i<Extensions.at(argument.Extension).Arguments.size(); i++)
         {
             entry.ArgValues.push_back(Extensions.at(argument.Extension).Arguments.at(i).Default);
         }
@@ -530,7 +526,6 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
 
 int8_t CProfile::Save( const string& location, const string& delimiter )
 {
-    uint16_t index, i, j;
     ofstream   fout;
 
     fout.open( location.c_str(), ios_base::trunc );
@@ -549,17 +544,17 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
         fout << PROFILE_FILEPATH << FilePath << endl;
         // Commands
         fout << endl << "# Command Settings" << endl;
-        for (index=0; index<Commands.size(); index++)
+        for (uint16_t index=0; index<Commands.size(); index++)
         {
             fout << "<" << Commands.at(index).Name << ">" << endl;
             fout << PROFILE_CMDPATH << Commands.at(index).Path << Commands.at(index).Command << endl;
             // Arguments
-            for (i=0; i<Commands.at(index).Arguments.size(); i++)
+            for (uint16_t i=0; i<Commands.at(index).Arguments.size(); i++)
             {
                 fout << PROFILE_CMDARG << Commands.at(index).Arguments.at(i).Name << delimiter
                                        << Commands.at(index).Arguments.at(i).Flag << delimiter
                                        << i_to_a(Commands.at(index).Arguments.at(i).Default);
-                for (j=0; j<Commands.at(index).Arguments.at(i).Values.size(); j++)
+                for (uint16_t j=0; j<Commands.at(index).Arguments.at(i).Values.size(); j++)
                 {
                     fout << delimiter << Commands.at(index).Arguments.at(i).Names.at(j);
                     fout << delimiter << Commands.at(index).Arguments.at(i).Values.at(j);
@@ -571,10 +566,10 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
 
         // Extensions
         fout << endl << "# Extension Settings" << endl;
-        for (index=0; index<Extensions.size(); index++)
+        for (uint16_t index=0; index<Extensions.size(); index++)
         {
             fout << "[";
-            for ( i=0; i<Extensions.at(index).extName.size(); i++ )
+            for (uint16_t i=0; i<Extensions.at(index).extName.size(); i++ )
             {
                 if (i>0)
                 {
@@ -591,7 +586,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
             if (Extensions.at(index).Blacklist.size()>0)
             {
                 fout << PROFILE_BLACKLIST;
-                for (i=0; i<Extensions.at(index).Blacklist.size(); i++)
+                for (uint16_t i=0; i<Extensions.at(index).Blacklist.size(); i++)
                 {
                     if (i>0)
                     {
@@ -602,12 +597,12 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                 fout << endl;
             }
             // Arguments
-            for (i=0; i<Extensions.at(index).Arguments.size(); i++)
+            for (uint16_t i=0; i<Extensions.at(index).Arguments.size(); i++)
             {
                 fout << PROFILE_EXTARG << Extensions.at(index).Arguments.at(i).Name << delimiter
                                        << Extensions.at(index).Arguments.at(i).Flag << delimiter
                                        << i_to_a(Extensions.at(index).Arguments.at(i).Default);
-                for (j=0; j<Extensions.at(index).Arguments.at(i).Values.size(); j++)
+                for (uint16_t j=0; j<Extensions.at(index).Arguments.at(i).Values.size(); j++)
                 {
                     fout << delimiter << Extensions.at(index).Arguments.at(i).Names.at(j);
                     fout << delimiter << Extensions.at(index).Arguments.at(i).Values.at(j);
@@ -615,18 +610,18 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
                 fout << endl;
             }
             // Argument forces
-            for (i=0; i<Extensions.at(index).ArgForces.size(); i++)
+            for (uint16_t i=0; i<Extensions.at(index).ArgForces.size(); i++)
             {
                 fout << PROFILE_ARGFORCE << Extensions.at(index).ArgForces.at(i).Path
                                          << delimiter << i_to_a(Extensions.at(index).ArgForces.at(i).Argument)
                                          << delimiter << Extensions.at(index).ArgForces.at(i).Value << endl;
             }
             // Exe forces
-            for (i=0; i<Extensions.at(index).ExeForces.size(); i++)
+            for (uint16_t i=0; i<Extensions.at(index).ExeForces.size(); i++)
             {
                 fout << PROFILE_EXEFORCE << Extensions.at(index).ExeForces.at(i).exePath
                                          << Extensions.at(index).ExeForces.at(i).exeName;
-                for (j=0; j<Extensions.at(index).ExeForces.at(i).Files.size(); j++)
+                for (uint16_t j=0; j<Extensions.at(index).ExeForces.at(i).Files.size(); j++)
                 {
                     fout << delimiter << Extensions.at(index).ExeForces.at(i).Files.at(j);
                 }
@@ -637,7 +632,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
 
         // Entries
         fout << endl << "# Custom Entries Settings" << endl;
-        for (index=0; index<Entries.size(); index++)
+        for (uint16_t index=0; index<Entries.size(); index++)
         {
             // Entry path, name, and alias
             fout << "{" << Entries.at(index).Path << Entries.at(index).Name
@@ -648,7 +643,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
             fout << PROFILE_ENTRY_CMDS;
             if (Entries.at(index).Custom == true)
             {
-                for (i=0; i<Entries.at(index).CmdValues.size(); i++)
+                for (uint16_t i=0; i<Entries.at(index).CmdValues.size(); i++)
                 {
                     if (i>0)
                     {
@@ -667,7 +662,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
             fout << PROFILE_ENTRY_ARGS;
             if (Entries.at(index).Custom == true)
             {
-                for (i=0; i<Entries.at(index).ArgValues.size(); i++)
+                for (uint16_t i=0; i<Entries.at(index).ArgValues.size(); i++)
                 {
                     if (i>0)
                     {
@@ -696,7 +691,6 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
 int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
 {
     int16_t ext_index;
-    uint16_t i, j;
     listoption_t option;
     string name;
     string value;
@@ -720,9 +714,9 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
         // Scan for command arguments
         if (Commands.size() > 0)
         {
-            for (i=0; i<Commands.size(); i++)
+            for (uint16_t i=0; i<Commands.size(); i++)
             {
-                for (j=0; j<Commands.at(i).Arguments.size(); j++)
+                for (uint16_t j=0; j<Commands.at(i).Arguments.size(); j++)
                 {
                     option.Name = Commands.at(i).Name + " ";
                     if (Commands.at(i).Arguments.at(j).Flag.compare(VALUE_NOVALUE) != 0)
@@ -770,7 +764,7 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
         // Scan for extension arguments
         if (Extensions.size() > 0)
         {
-            for (i=0; i<Extensions.at(ext_index).Arguments.size(); i++)
+            for (uint16_t i=0; i<Extensions.at(ext_index).Arguments.size(); i++)
             {
                 option.Name = Extensions.at(ext_index).Arguments.at(i).Name + ": " +
                               Extensions.at(ext_index).Arguments.at(i).Flag + " ";
@@ -788,8 +782,8 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
                         && (Extensions.at(ext_index).Arguments.at(i).Values.size() > 0)
                        )
                     {
-                        if (   CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size())
-                            && CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size())
+                        if (   CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size() )
+                            && CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size() )
                            )
                         {
                             name = Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) );
@@ -818,8 +812,9 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
                 }
                 else
                 {
-                    if (CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Names.size()) &&
-                        CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Values.size())    )
+                    if (   CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Names.size() )
+                        && CheckRange( Extensions.at(ext_index).Arguments.at(i).Default, Extensions.at(ext_index).Arguments.at(i).Values.size() )
+                       )
                     {
                         name = Extensions.at(ext_index).Arguments.at(i).Names.at( Extensions.at(ext_index).Arguments.at(i).Default );
 
@@ -856,7 +851,6 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
 
 void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
 {
-    uint16_t index;
     string value;
 
     values.clear();
@@ -865,7 +859,7 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
     {
         if (CheckRange(item.Argument, Commands.at(item.Command).Arguments.size() ))
         {
-            for (index=0; index<Commands.at(item.Command).Arguments.at(item.Argument).Names.size(); index++)
+            for (uint16_t index=0; index<Commands.at(item.Command).Arguments.at(item.Argument).Names.size(); index++)
             {
                 value = Commands.at(item.Command).Arguments.at(item.Argument).Names.at(index);
                 if (value.compare(VALUE_NOVALUE) == 0)
@@ -888,7 +882,7 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
     {
         if (CheckRange( item.Argument, Extensions.at(item.Extension).Arguments.size() ))
         {
-            for (index=0; index<Extensions.at(item.Extension).Arguments.at(item.Argument).Names.size(); index++)
+            for (uint16_t index=0; index<Extensions.at(item.Extension).Arguments.at(item.Argument).Names.size(); index++)
             {
                 value = Extensions.at(item.Extension).Arguments.at(item.Argument).Names.at(index);
                 if (value.compare(VALUE_NOVALUE) == 0)
@@ -916,13 +910,12 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
 
 int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector<listitem_t>& items )
 {
-    DIR *dp;
-    struct dirent *dirp;
+    DIR *dp = NULL;
+    struct dirent *dirp = NULL;
     string filename;
     bool found;
     int16_t alpha_index;
     int16_t ext_index;
-    uint16_t file, i;
     listitem_t item;
     entry_t entry;
     vector<string> dirs;
@@ -948,11 +941,11 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             if (filename.length() > 0)
             {
                 // Skip . and ..
-                if (filename.compare(".") == 0 || filename.compare("..") == 0)
+                if ((filename.compare(".") == 0) || (filename.compare("..") == 0))
                     continue;
 
                 // Skip hidden files and folders
-                if (showhidden == false && filename.at(0) == '.')
+                if ((showhidden == false) && (filename.at(0) == '.'))
                     continue;
 
                 item.Entry  = -1;
@@ -964,7 +957,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
                     found = false;
                     if (CheckRange( ext_index, Extensions.size() ))
                     {
-                        for (i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
+                        for (uint16_t i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
                         {
                             if (Extensions.at(ext_index).Blacklist.at(i).compare(filename) == 0)
                             {
@@ -998,11 +991,14 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
     }
 
     // Filter
-    for (file=0; file<files.size(); file++)
+    for (uint16_t file=0; file<files.size(); file++)
     {
         found = false;
-        if (CheckExtension( files.at(file), ZIP_EXT) < 0 ||                       // Any non-zip ext should be filtered
-           (CheckExtension( files.at(file), ZIP_EXT) >= 0 && showzip == false))   // only filter zip if internal support is off
+        if (   (CheckExtension( files.at(file), ZIP_EXT) < 0)       // Any non-zip ext should be filtered
+            || (   (CheckExtension( files.at(file), ZIP_EXT) >= 0)
+                && (showzip == false)                               // only filter zip if internal support is off
+               )
+           )
         {
             // Filter out files by extension
             ext_index = FindExtension( files.at(file) );
@@ -1011,7 +1007,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             found = false;
             if (CheckRange( ext_index, Extensions.size() ))
             {
-                for (i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
+                for (uint16_t i=0; i<Extensions.at(ext_index).Blacklist.size(); i++)
                 {
                     if (Extensions.at(ext_index).Blacklist.at(i).compare(files.at(file)) == 0)
                     {
@@ -1027,7 +1023,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
         }
 
         // Filter by search string
-        if (found != true && EntryFilter.length() > 0)
+        if ((found != true) && (EntryFilter.length() > 0))
         {
             if (lowercase(files.at(file)).find( lowercase(EntryFilter), 0) != string::npos)
             {
@@ -1056,9 +1052,9 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
 
             // Find if an entry has been defined
             item.Entry = -1;
-            for (i=0; i<Entries.size(); i++)
+            for (uint16_t i=0; i<Entries.size(); i++)
             {
-                if (  (Entries.at(i).Name.compare(files.at(file)) == 0)
+                if (   (Entries.at(i).Name.compare(files.at(file)) == 0)
                     && (   (Entries.at(i).Path.compare("./") == 0)
                         || (Entries.at(i).Path.compare(location) == 0)
                        )
@@ -1080,14 +1076,14 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
     // Build alphabetic indices
     AlphabeticIndices.clear();
     AlphabeticIndices.resize(TOTAL_LETTERS, 0);
-    for (i=0; i<items.size(); i++)
+    for (uint16_t i=0; i<items.size(); i++)
     {
         if (items.at(i).Type != TYPE_DIR)
         {
             if (items.at(i).Name.length() > 0 )
             {
                 alpha_index = tolower(items.at(i).Name.at(0))-'a';
-                if (alpha_index < 'a' || alpha_index > 'z')
+                if ((alpha_index < 'a') || (alpha_index > 'z'))
                 {
                     alpha_index = TOTAL_LETTERS-1;
                 }
@@ -1108,7 +1104,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
         }
     }
     alpha_index = 0;
-    for (i=0; i<AlphabeticIndices.size(); i++)
+    for (uint16_t i=0; i<AlphabeticIndices.size(); i++)
     {
         if (AlphabeticIndices.at(i) == 0)
         {
@@ -1121,11 +1117,9 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
 
 int16_t CProfile::FindExtension( const string& ext )
 {
-    uint16_t i, j;
-
-    for (i=0; i<Extensions.size(); i++)
+    for (uint16_t i=0; i<Extensions.size(); i++)
     {
-        for (j=0; j<Extensions.at(i).extName.size(); j++)
+        for (uint16_t j=0; j<Extensions.at(i).extName.size(); j++)
         {
             if (CheckExtension( ext, Extensions.at(i).extName.at(j)) >= 0)
             {
@@ -1141,11 +1135,11 @@ int16_t CProfile::FindExtension( const string& ext )
 bool CompareItems( listitem_t a, listitem_t b )
 {
     // Folders should be above files
-    if (a.Type == TYPE_DIR && b.Type >= TYPE_FILE)
+    if ((a.Type == TYPE_DIR) && (b.Type >= TYPE_FILE))
     {
         return true;
     }
-    else if (a.Type >= TYPE_FILE && b.Type == TYPE_DIR)
+    else if ((a.Type >= TYPE_FILE) && (b.Type == TYPE_DIR))
     {
         return false;
     }

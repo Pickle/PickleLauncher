@@ -199,7 +199,6 @@ void CConfig::SetDefaults( void )
 
 int8_t CConfig::Load( const string& location )
 {
-    uint16_t        i;
     string          line;
     string          label;
     ifstream        fin;
@@ -274,12 +273,12 @@ int8_t CConfig::Load( const string& location )
                 LOAD_INT( OPT_ENTRY_MAX_W,          DisplayListMaxWidth );
                 LOAD_INT( OPT_FILEPATH_MAX_W,       FilePathMaxWidth );
                 // GUI Buttons
-                for (i=0; i<ButtonModesLeftEnable.size(); i++)
+                for (uint16_t i=0; i<ButtonModesLeftEnable.size(); i++)
                 {
                     label = string(OPT_BUTTONLEFT_ENABLED) + "_"+ i_to_a(i);
                     LOAD_INT( label,                ButtonModesLeftEnable.at(i) );
                 }
-                for (i=0; i<ButtonModesRightEnable.size(); i++)
+                for (uint16_t i=0; i<ButtonModesRightEnable.size(); i++)
                 {
                     label = string(OPT_BUTTONRIGHT_ENABLED) + "_"+ i_to_a(i);
                     LOAD_INT( label,                ButtonModesRightEnable.at(i) );
@@ -365,7 +364,6 @@ int8_t CConfig::Load( const string& location )
 
 int8_t CConfig::Save( const string& location )
 {
-    uint8_t     i;
     ofstream    fout;
     string      label;
 
@@ -430,12 +428,12 @@ int8_t CConfig::Save( const string& location )
         SAVE_INT( OPT_ENTRY_MAX_W,          HELP_ENTRY_MAX_W,           DisplayListMaxWidth );
         SAVE_INT( OPT_FILEPATH_MAX_W,       HELP_FILEPATH_MAX_W,        FilePathMaxWidth );
         SAVE_LBL( "# Button Enable Options" );
-        for (i=0; i<ButtonModesLeftEnable.size(); i++)
+        for (uint8_t i=0; i<ButtonModesLeftEnable.size(); i++)
         {
             label = string(OPT_BUTTONLEFT_ENABLED) + "_"+ i_to_a(i);
             SAVE_INT( label,                HELP_DEFAULT,               ButtonModesLeftEnable.at(i) );
         }
-        for (i=0; i<ButtonModesRightEnable.size(); i++)
+        for (uint8_t i=0; i<ButtonModesRightEnable.size(); i++)
         {
             label = string(OPT_BUTTONRIGHT_ENABLED) + "_"+ i_to_a(i);
             SAVE_INT( label,                HELP_DEFAULT,               ButtonModesRightEnable.at(i) );
@@ -459,7 +457,7 @@ int8_t CConfig::Save( const string& location )
         SAVE_STR( OPT_PATH_QUIT,            HELP_PATH_QUIT,             PathButtons.at(EVENT_QUIT) );
         SAVE_LBL( "# Colors" );
         fout << "#   ";
-        for (i=0; i<ColorNames.size(); i++)
+        for (uint8_t i=0; i<ColorNames.size(); i++)
         {
             fout << setw(4) << i_to_a(i) << setw(20) << ColorNames.at(i);
             if ((i+1) % 3 == 0)
