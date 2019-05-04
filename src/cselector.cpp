@@ -1050,7 +1050,7 @@ void CSelector::PopModeValue( void )
 
                 if (index == defvalue)
                 {
-                    ListNames.at(i).text += '*';
+                    ListNames.at(i).text += ENTRY_DEFAULT_VALUE;
                 }
 
                 // Set the color for the selected item for the entry

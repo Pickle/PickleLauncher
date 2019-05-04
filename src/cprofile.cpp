@@ -819,7 +819,7 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
 
                             if (value.compare(VALUE_NOVALUE) != 0)
                             {
-                                option.Name += value;
+                                option.Name += "(" + value + ")";
                             }
                         }
                         else

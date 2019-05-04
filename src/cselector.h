@@ -54,6 +54,7 @@ using namespace std;
 #define BUTTON_LABEL_BACK       "Back"                          /** Ascii text fallback for the back button label. */
 #define BUTTON_LABEL_SELECT     "Select"                        /** Ascii text fallback for the select button label. */
 #define BUTTON_LABEL_QUIT       "Quit"                          /** Ascii text fallback for the quit button label. */
+#define ENTRY_DEFAULT_VALUE     "*"                             /** Ascii to identify the default value. */
 
 #define EMPTY_DIR_LABEL         "<no files detected in dir>"    /** Ascii text for display if no files or dirs are detected. */
 #define EMPTY_ZIP_LABEL         "<no files detected in zip>"    /** Ascii text for display if no files in a zip are detected. */
