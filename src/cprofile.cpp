@@ -441,9 +441,14 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
         {
             for (uint8_t i=0; i<parts.size(); i++)
             {
-                entry.CmdValues.push_back( a_to_i( parts.at(i) ) );
+                int32_t value = a_to_i( parts.at(i) );
+
+                entry.CmdValues.push_back( value );
+                if (value != DEFAULT_VALUE)
+                {
+                    entry.Custom = true;
+                }
             }
-            entry.Custom = true;
         }
     }
     else
@@ -468,7 +473,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
         }
         else
         {
-            if (entry.Custom == false)
+            if (entry.CmdValues.size() == 0)
             {
                 Log( "Error: %s custom values are present but were not for %s\n", PROFILE_ENTRY_CMDS,PROFILE_ENTRY_ARGS );
             }
@@ -476,7 +481,13 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
             {
                 for (uint8_t i=0; i<parts.size(); i++)
                 {
-                    entry.ArgValues.push_back( a_to_i( parts.at(i) ) );
+                    int32_t value = a_to_i( parts.at(i) );
+
+                    entry.ArgValues.push_back( value );
+                    if (value != DEFAULT_VALUE)
+                    {
+                        entry.Custom = true;
+                    }
                 }
             }
         }
@@ -486,7 +497,11 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
         Log( "Error: %s not found\n", PROFILE_ENTRY_ARGS );
         return 1;
     }
-    Entries.push_back( entry );
+
+    if ((entry.Alias.length() > 0) || (entry.Custom == true))
+    {
+        Entries.push_back( entry );
+    }
 
     return 0;
 }
@@ -503,7 +518,7 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
     {
         for (uint16_t j=0; j<Commands.at(i).Arguments.size(); j++)
         {
-            entry.CmdValues.push_back(Commands.at(i).Arguments.at(j).Default);
+            entry.CmdValues.push_back(DEFAULT_VALUE);
         }
     }
     entry.ArgValues.clear();
@@ -511,7 +526,7 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
     {
         for (uint16_t i=0; i<Extensions.at(argument.Extension).Arguments.size(); i++)
         {
-            entry.ArgValues.push_back(Extensions.at(argument.Extension).Arguments.at(i).Default);
+            entry.ArgValues.push_back(DEFAULT_VALUE);
         }
     }
     else
@@ -634,29 +649,35 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
         fout << endl << "# Custom Entries Settings" << endl;
         for (uint16_t index=0; index<Entries.size(); index++)
         {
-            // Entry path, name, and alias
-            fout << "{" << Entries.at(index).Path << Entries.at(index).Name
-                        << delimiter
-                        << Entries.at(index).Alias << "}" << endl;
+            // Check if entry has custom alias or custom values
+            if (   (Entries.at(index).Alias.length() > 0)
+                || (Entries.at(index).Custom == true)
+               )
+            {
+                // Entry path, name, and alias
+                fout << "{" << Entries.at(index).Path << Entries.at(index).Name
+                            << delimiter
+                            << Entries.at(index).Alias << "}" << endl;
 
-            // Entry command values
-            fout << PROFILE_ENTRY_CMDS;
-            if (Entries.at(index).Custom == true)
-            {
-                for (uint16_t i=0; i<Entries.at(index).CmdValues.size(); i++)
+                // Entry command values
+                fout << PROFILE_ENTRY_CMDS;
+                if (Entries.at(index).Custom == true)
                 {
-                    if (i>0)
+                    for (uint16_t i=0; i<Entries.at(index).CmdValues.size(); i++)
                     {
-                        fout << delimiter;
+                        if (i>0)
+                        {
+                            fout << delimiter;
+                        }
+                        fout << Entries.at(index).CmdValues.at(i);
                     }
-                    fout << Entries.at(index).CmdValues.at(i);
                 }
+                else
+                {
+                    fout << VALUE_NOVALUE;
+                }
+                fout << endl;
             }
-            else
-            {
-                fout << VALUE_NOVALUE;
-            }
-            fout << endl;
 
             // Entry argument values
             fout << PROFILE_ENTRY_ARGS;
@@ -724,18 +745,18 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
                         option.Name += Commands.at(i).Arguments.at(j).Flag + " ";
                     }
 
-                    if (CheckRange( item.Entry, Entries.size() ))
+                    if (   (CheckRange( item.Entry, Entries.size() ))
+                        && (Entries.at(item.Entry).CmdValues.size() > 0)
+                        && (Entries.at(item.Entry).CmdValues.at(i) > 0)
+                       )
                     {
-                        if (Entries.at(item.Entry).CmdValues.size() > 0)
+                        if ((uint16_t)Entries.at(item.Entry).CmdValues.at(i) < Commands.at(i).Arguments.at(j).Names.size())
                         {
-                            if (Entries.at(item.Entry).CmdValues.at(i) < Commands.at(i).Arguments.at(j).Names.size())
-                            {
-                                option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(i) );
-                            }
-                            else
-                            {
-                                option.Name += "Error: ScanEntry Entry out of range";
-                            }
+                            option.Name += Commands.at(i).Arguments.at(j).Names.at( Entries.at(item.Entry).CmdValues.at(i) );
+                        }
+                        else
+                        {
+                            option.Name += "Error: ScanEntry Entry out of range";
                         }
                     }
                     else
@@ -780,10 +801,11 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
 
                     if (   (Extensions.at(ext_index).Arguments.at(i).Names.size() > 0)
                         && (Extensions.at(ext_index).Arguments.at(i).Values.size() > 0)
+                        && (Entries.at(item.Entry).ArgValues.at(i) > DEFAULT_VALUE)
                        )
                     {
-                        if (   CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size() )
-                            && CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size() )
+                        if (   (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Names.size() ))
+                            && (CheckRange( Entries.at(item.Entry).ArgValues.at(i), Extensions.at(ext_index).Arguments.at(i).Values.size() ))
                            )
                         {
                             name = Extensions.at(ext_index).Arguments.at(i).Names.at( Entries.at(item.Entry).ArgValues.at(i) );

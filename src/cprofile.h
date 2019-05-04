@@ -52,6 +52,7 @@ using namespace std;
 #define ARGFORCE_COUNT          3                   /** Minimum options for an argument force. */
 #define EXEFORCE_COUNT          2                   /** Minimum options for an exe force. */
 #define TOTAL_LETTERS           27                  /** 26 alpha chars plus 1 for anything else */
+#define DEFAULT_VALUE           (-1)                /** The number representing an index that is still the default selection */
 
 /** @brief Type of items that can be displayed in selection mode
  */
@@ -140,8 +141,8 @@ struct entry_t {
     string              Name;       /** @brief Name of the entry */
     string              Path;       /** @brief Path to the file */
     string              Alias;      /** @brief Overrides the actual filename for display */
-    vector<uint16_t>    CmdValues;  /** @brief The current selected values for the commands */
-    vector<uint16_t>    ArgValues;  /** @brief The current selected values for the arguments */
+    vector<int16_t>     CmdValues;  /** @brief The current selected values for the commands */
+    vector<int16_t>     ArgValues;  /** @brief The current selected values for the arguments */
 };
 
 /** @brief This class controls loading, processing, and saving of profile data

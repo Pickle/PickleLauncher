@@ -1029,7 +1029,7 @@ void CSelector::PopModeValue( void )
                 }
 
                 // Detect the default value
-                int16_t defvalue = 0;
+                int16_t defvalue;
 
                 if (ItemsArgument.at(DisplayList.at(MODE_SELECT_ARGUMENT).absolute).Command >= 0)
                 {
@@ -1048,21 +1048,21 @@ void CSelector::PopModeValue( void )
                     defvalue = Profile.Extensions.at(argument.Extension).Arguments.at(argument.Argument).Default;
                 }
 
-                if (index==defvalue)
+                if (index == defvalue)
                 {
                     ListNames.at(i).text += '*';
                 }
 
                 // Set the color for the selected item for the entry
                 ListNames.at(i).color = Config.ColorFontFiles;
-                if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry<0)
+                if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry < 0)
                 {
                     // A custom value has been selected, so create a new entry
                     if (SetOneEntryValue == true)
                     {
                         int16_t entry = Profile.AddEntry( argument, ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Name );
 
-                        if (entry>0)
+                        if (entry > 0)
                         {
                             ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry = entry;
                         }
@@ -1071,32 +1071,62 @@ void CSelector::PopModeValue( void )
                             Log( "Error: Could not create new entry\n" );
                         }
                     }
-                    else if (index==defvalue)
+                    else if (index == defvalue)
                     {
                         ListNames.at(i).color = COLOR_RED;
                     }
                 }
 
-                if (ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry>=0)
+                if (CheckRange( ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry, ItemsEntry.size()))
                 {
+                    entry_t* profile_entry = &Profile.Entries.at( ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry );
+
                     if (ItemsArgument.at(DisplayList.at(MODE_SELECT_ARGUMENT).absolute).Command >= 0)
                     {
+                        /* Set the command value if one is selected */
                         if ((SetOneEntryValue == true) || (SetAllEntryValue == true))
                         {
-                            Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).CmdValues.at(argument.Command+argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
+                            if (DisplayList.at(MODE_SELECT_VALUE).absolute != defvalue)
+                            {
+                                profile_entry->CmdValues.at(argument.Command+argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
+                            }
+                            else
+                            {
+                                profile_entry->CmdValues.at(argument.Command+argument.Argument) = DEFAULT_VALUE;
+                            }
                         }
-                        if (index == Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).CmdValues.at(argument.Command+argument.Argument))
+
+                        /* Highlight the item with red for the value that will be used for this entry */
+                        if (   (   (index == defvalue)
+                                && (profile_entry->CmdValues.at(argument.Command+argument.Argument) == DEFAULT_VALUE)
+                               )
+                            || (index == profile_entry->CmdValues.at(argument.Command+argument.Argument))
+                           )
                         {
                             ListNames.at(i).color = COLOR_RED;
                         }
                     }
                     else
                     {
+                        /* Set the command value if one is selected */
                         if ((SetOneEntryValue == true) || (SetAllEntryValue == true))
                         {
-                            Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).ArgValues.at(argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
+                            if (DisplayList.at(MODE_SELECT_VALUE).absolute != defvalue)
+                            {
+                                profile_entry->ArgValues.at(argument.Argument) = DisplayList.at(MODE_SELECT_VALUE).absolute;
+                            }
+                            else
+                            {
+                                profile_entry->ArgValues.at(argument.Argument) = DEFAULT_VALUE;
+                            }
                         }
-                        if (index == Profile.Entries.at(ItemsEntry.at(DisplayList.at(MODE_SELECT_ENTRY).absolute).Entry).ArgValues.at(argument.Argument))
+
+                        /* Highlight the item with red for the value that will be used for this entry */
+                        if (   (   (index == defvalue)
+                                && (profile_entry->ArgValues.at(argument.Argument) == DEFAULT_VALUE)
+                               )
+                            || (index == profile_entry->ArgValues.at(argument.Argument))
+                           )
                         {
                             ListNames.at(i).color = COLOR_RED;
                         }
@@ -1939,7 +1969,9 @@ int8_t CSelector::RunExec( uint16_t selection )
 
                 if (Profile.Commands.at(i).Arguments.at(j).Flag.compare(VALUE_FLAGONLY) !=0 )
                 {
-                    if (entry_found==true)
+                    if (   (entry_found == true)
+                        && (entry->CmdValues.at(i) > DEFAULT_VALUE)
+                       )
                     {
                         command += Profile.Commands.at(i).Arguments.at(j).Values.at(entry->CmdValues.at(i));
                     }
@@ -1998,17 +2030,12 @@ int8_t CSelector::RunExec( uint16_t selection )
             // Check arguments for default value or custom entry value
             if (value.length() == 0 )
             {
-                if (entry_found==true)
+                if (   (entry_found == true)
+                    && (CheckRange( i, entry->ArgValues.size() ))
+                    && (entry->ArgValues.at(i) > DEFAULT_VALUE)
+                   )
                 {
-                    if (CheckRange( i, entry->ArgValues.size() ))
-                    {
-                        value = argument->Values.at( entry->ArgValues.at(i) );
-                    }
-                    else
-                    {
-                        Log( "Error: RunExec i is out of range\n" );
-                        return 1;
-                    }
+                    value = argument->Values.at( entry->ArgValues.at(i) );
                 }
                 else
                 {
