@@ -1242,82 +1242,85 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                 LastSelectedEntry = entry_index;
             }
 
-            text_surface = TTF_RenderText_Solid( Fonts.at(ListNames.at(entry_index).font), ListNames.at(entry_index).text.c_str(), Config.Colors.at(ListNames.at(entry_index).color) );
-
-            if (text_surface != NULL)
+            if (ListNames.at(entry_index).text.length() > 0)
             {
-                int16_t offset = 0;
+                text_surface = TTF_RenderText_Solid( Fonts.at(ListNames.at(entry_index).font), ListNames.at(entry_index).text.c_str(), Config.Colors.at(ListNames.at(entry_index).color) );
 
-                location.x += ImageSelectPointer->w;
-                RectEntries.at(entry_index).x = location.x;
-                RectEntries.at(entry_index).y = location.y;
-                RectEntries.at(entry_index).w = text_surface->w;
-                RectEntries.at(entry_index).h = text_surface->h;
-
-                if (text_surface->w > (Config.DisplayListMaxWidth-location.x) )
+                if (text_surface != NULL)
                 {
-                    RectEntries.at(entry_index).w = Config.DisplayListMaxWidth-location.x;
+                    int16_t offset = 0;
 
-                    if ((Config.TextScrollOption == true) && (DisplayList.at(Mode).relative == entry_index))
+                    location.x += ImageSelectPointer->w;
+                    RectEntries.at(entry_index).x = location.x;
+                    RectEntries.at(entry_index).y = location.y;
+                    RectEntries.at(entry_index).w = text_surface->w;
+                    RectEntries.at(entry_index).h = text_surface->h;
+
+                    if (text_surface->w > (Config.DisplayListMaxWidth-location.x) )
                     {
-                        offset = TextScrollOffset;
+                        RectEntries.at(entry_index).w = Config.DisplayListMaxWidth-location.x;
 
-                        if (CurScrollPause > 1)
+                        if ((Config.TextScrollOption == true) && (DisplayList.at(Mode).relative == entry_index))
                         {
-                            CurScrollPause++;
-                            if (CurScrollPause >= Config.ScrollPauseSpeed)
-                            {
-                                CurScrollPause = 1;
-                            }
-                        }
-                        else
-                        {
-                            CurScrollSpeed++;
-                            if (CurScrollSpeed >= Config.ScrollSpeed)
-                            {
-                                CurScrollSpeed = 1;
-                                if (TextScrollDir == true)
-                                {
-                                    TextScrollOffset += Config.ScreenRatioW;
-                                }
-                                else
-                                {
-                                    TextScrollOffset -= Config.ScreenRatioW;
-                                }
-                                Redraw = true;
-                            }
+                            offset = TextScrollOffset;
 
-                            if (RectEntries.at(entry_index).w+TextScrollOffset >= text_surface->w)
+                            if (CurScrollPause > 1)
                             {
-                                TextScrollDir   = false;
-                                CurScrollPause  = 2;
+                                CurScrollPause++;
+                                if (CurScrollPause >= Config.ScrollPauseSpeed)
+                                {
+                                    CurScrollPause = 1;
+                                }
                             }
-                            else if (TextScrollOffset == 0)
+                            else
                             {
-                                TextScrollDir   = true;
-                                CurScrollPause  = 2;
+                                CurScrollSpeed++;
+                                if (CurScrollSpeed >= Config.ScrollSpeed)
+                                {
+                                    CurScrollSpeed = 1;
+                                    if (TextScrollDir == true)
+                                    {
+                                        TextScrollOffset += Config.ScreenRatioW;
+                                    }
+                                    else
+                                    {
+                                        TextScrollOffset -= Config.ScreenRatioW;
+                                    }
+                                    Redraw = true;
+                                }
+
+                                if (RectEntries.at(entry_index).w+TextScrollOffset >= text_surface->w)
+                                {
+                                    TextScrollDir   = false;
+                                    CurScrollPause  = 2;
+                                }
+                                else if (TextScrollOffset == 0)
+                                {
+                                    TextScrollDir   = true;
+                                    CurScrollPause  = 2;
+                                }
                             }
                         }
                     }
+
+                    rect_clip.w = Config.DisplayListMaxWidth-location.x;
+                    rect_clip.h = text_surface->h;
+                    rect_clip.x = offset;
+                    rect_clip.y = 0;
+
+                    ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
+
+                    ListNameHeight = MAX(ListNameHeight, location.y+text_surface->h );
+                    location.x -= ImageSelectPointer->w;
+                    location.y += text_surface->h + Config.EntryYDelta;
+
+                    FREE_IMAGE( text_surface );
                 }
-
-                rect_clip.w = Config.DisplayListMaxWidth-location.x;
-                rect_clip.h = text_surface->h;
-                rect_clip.x = offset;
-                rect_clip.y = 0;
-
-                ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
-
-                ListNameHeight = MAX(ListNameHeight, location.y+text_surface->h );
-                location.x -= ImageSelectPointer->w;
-                location.y += text_surface->h + Config.EntryYDelta;
-
-                FREE_IMAGE( text_surface );
-            }
-            else
-            {
-                Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
-                return 1;
+                else
+                {
+                    Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
+                    return 1;
+                }
             }
         }
     }
