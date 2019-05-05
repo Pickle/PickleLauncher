@@ -27,9 +27,9 @@ int32_t main( int32_t argc, char** argv )
     int32_t result;
     CSelector selector;
 
-    selector.Log( "Starting %s Version %s.\n", APPNAME, APPVERSION );
+    selector.Log( __FILENAME__, __LINE__, "Starting %s Version %s.", APPNAME, APPVERSION );
     result = selector.Run( argc, argv );
-    selector.Log( "Quitting %s Version %s.\n", APPNAME, APPVERSION );
+    selector.Log( __FILENAME__, __LINE__, "Quitting %s Version %s.", APPNAME, APPVERSION );
 
     return result;
 }

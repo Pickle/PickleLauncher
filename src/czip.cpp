@@ -63,20 +63,20 @@ void CZip::ListFiles( const string& zipfile, vector<string>& list )
         err = unzGetGlobalInfo64( uf,&gi );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzGetGlobalInfo\n",err);
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetGlobalInfo", err );
             return;
         }
     }
     else
     {
-        Log( "error with zipfile %s in unzOpen64\n", zipfile.c_str() );
+        Log( __FILENAME__, __LINE__, "error with zipfile %s in unzOpen64", zipfile.c_str() );
         return;
     }
-    Log( "Reading zip file %s\n", zipfile.c_str() );
+    Log( __FILENAME__, __LINE__, "Reading zip file %s", zipfile.c_str() );
 
     // Spit out some information about the files in the zip for debug
-    Log( "  Length  Method     Size Ratio   Date    Time   CRC-32     Name\n" );
-    Log( "  ------  ------     ---- -----   ----    ----   ------     ----\n" );
+    Log( __FILENAME__, __LINE__, "  Length  Method     Size Ratio   Date    Time   CRC-32     Name" );
+    Log( __FILENAME__, __LINE__, "  ------  ------     ---- -----   ----    ----   ------     ----" );
     for (i=0; i<gi.number_entry; i++)
     {
         char filename_inzip[256];
@@ -87,7 +87,7 @@ void CZip::ListFiles( const string& zipfile, vector<string>& list )
         err = unzGetCurrentFileInfo64( uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0 );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzGetCurrentFileInfo\n",err);
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetCurrentFileInfo", err );
             break;
         }
         if (file_info.uncompressed_size > 0)
@@ -119,9 +119,9 @@ void CZip::ListFiles( const string& zipfile, vector<string>& list )
             string_method="Unkn. ";
 
         Display64BitsSize( file_info.uncompressed_size,7 );
-        Log( "  %6s%c",string_method,charCrypt);
+        Log( __FILENAME__, __LINE__, "  %6s%c", string_method, charCrypt );
         Display64BitsSize( file_info.compressed_size,7 );
-        Log( " %3lu%%  %2.2lu-%2.2lu-%2.2lu  %2.2lu:%2.2lu  %8.8lx   %s\n",
+        Log( __FILENAME__, __LINE__, " %3lu%%  %2.2lu-%2.2lu-%2.2lu  %2.2lu:%2.2lu  %8.8lx   %s",
                 ratio,
                 (uLong)file_info.tmu_date.tm_mon + 1,
                 (uLong)file_info.tmu_date.tm_mday,
@@ -133,7 +133,7 @@ void CZip::ListFiles( const string& zipfile, vector<string>& list )
             err = unzGoToNextFile( uf );
             if (err != UNZ_OK)
             {
-                Log( "error %d with zipfile in unzGoToNextFile\n",err);
+                Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGoToNextFile", err );
                 break;
             }
         }
@@ -162,13 +162,13 @@ void CZip::ExtractFile( const string& zipfile, const string& location, const str
         err = unzGetGlobalInfo64( uf,&gi );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzGetGlobalInfo\n",err);
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetGlobalInfo", err );
             return;
         }
     }
     else
     {
-        Log( "error with zipfile %s in unzOpen64\n", zipfile.c_str() );
+        Log( __FILENAME__, __LINE__, "error with zipfile %s in unzOpen64", zipfile.c_str() );
         return;
     }
 
@@ -180,7 +180,7 @@ void CZip::ExtractFile( const string& zipfile, const string& location, const str
         err = unzGetCurrentFileInfo64( uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0 );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzGetCurrentFileInfo\n",err);
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetCurrentFileInfo", err );
             break;
         }
 
@@ -195,7 +195,7 @@ void CZip::ExtractFile( const string& zipfile, const string& location, const str
             err = unzGoToNextFile( uf );
             if (err != UNZ_OK)
             {
-                Log( "error %d with zipfile in unzGoToNextFile\n",err);
+                Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGoToNextFile", err );
                 break;
             }
         }
@@ -219,13 +219,13 @@ void CZip::ExtractFiles( const string& zipfile, const string& location )
         err = unzGetGlobalInfo64( uf, &gi );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzGetGlobalInfo \n", err );
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetGlobalInfo", err );
             return;
         }
     }
     else
     {
-        Log( "error with zipfile in unzOpen64 \n" );
+        Log( __FILENAME__, __LINE__, "error with zipfile in unzOpen64" );
         return;
     }
 
@@ -242,7 +242,7 @@ void CZip::ExtractFiles( const string& zipfile, const string& location )
             err = unzGoToNextFile( uf );
             if (err != UNZ_OK)
             {
-                Log( "error %d with zipfile in unzGoToNextFile\n", err );
+                Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGoToNextFile", err );
                 break;
             }
         }
@@ -265,14 +265,14 @@ int32_t CZip::Extract( unzFile uf, const string& location )
     err = unzGetCurrentFileInfo64( uf, &file_info, filename_inzip, sizeof(filename_inzip), NULL, 0, NULL, 0 );
     if (err != UNZ_OK)
     {
-        Log( "error %d with zipfile in unzGetCurrentFileInfo\n", err );
+        Log( __FILENAME__, __LINE__, "error %d with zipfile in unzGetCurrentFileInfo", err );
         return err;
     }
 
     buf = (void*)malloc(WRITEBUFFERSIZE);
     if (buf == NULL)
     {
-        Log( "Error allocating memory\n" );
+        Log( __FILENAME__, __LINE__, "Error allocating memory" );
         free(buf);
         return UNZ_INTERNALERROR;
     }
@@ -280,7 +280,7 @@ int32_t CZip::Extract( unzFile uf, const string& location )
     err = unzOpenCurrentFile( uf );
     if (err != UNZ_OK)
     {
-        Log( "error %d with zipfile in unzOpenCurrentFile\n", err );
+        Log( __FILENAME__, __LINE__, "error %d with zipfile in unzOpenCurrentFile", err );
         free(buf);
         return err;
     }
@@ -291,20 +291,20 @@ int32_t CZip::Extract( unzFile uf, const string& location )
 
     if (fout != NULL)
     {
-        Log( " extracting: %s\n", write_filename.c_str() );
+        Log( __FILENAME__, __LINE__, " extracting: %s", write_filename.c_str() );
 
         do {
             err = unzReadCurrentFile( uf, buf, WRITEBUFFERSIZE );
             if (err < 0)
             {
-                Log( "error %d with zipfile in unzReadCurrentFile\n",err);
+                Log( __FILENAME__, __LINE__, "error %d with zipfile in unzReadCurrentFile", err );
                 break;
             }
             if (err > 0)
             {
                 if (fwrite( buf, err, 1, fout ) != 1)
                 {
-                    Log( "error in writing extracted file\n" );
+                    Log( __FILENAME__, __LINE__, "error in writing extracted file" );
                     err = UNZ_ERRNO;
                     break;
                 }
@@ -323,7 +323,7 @@ int32_t CZip::Extract( unzFile uf, const string& location )
         err = unzCloseCurrentFile( uf );
         if (err != UNZ_OK)
         {
-            Log( "error %d with zipfile in unzCloseCurrentFile\n",err);
+            Log( __FILENAME__, __LINE__, "error %d with zipfile in unzCloseCurrentFile", err );
         }
 
         AddUnzipFile( write_filename );
@@ -358,11 +358,11 @@ void CZip::Display64BitsSize(ZPOS64_T n, int size_char)
       while (size_char > size_display_string)
       {
           size_char--;
-          Log( " " );
+          Log( __FILENAME__, __LINE__, " " );
       }
   }
 
-  Log( "%s",&number[pos_string]);
+  Log( __FILENAME__, __LINE__, "%s", &number[pos_string] );
 }
 
 void CZip::AddUnzipFile( const string& filename )
@@ -384,7 +384,7 @@ void CZip::DelUnzipFiles( void )
     for (i=0; i<UnzipFiles.size(); i++)
     {
 #if defined(DEBUG)
-        Log( "Removing file %s\n", UnzipFiles.at(i).c_str() );
+        Log( __FILENAME__, __LINE__, "Removing file %s", UnzipFiles.at(i).c_str() );
 #endif
         remove( UnzipFiles.at(i).c_str() );
     }
@@ -399,7 +399,7 @@ int8_t CZip::SaveUnzipList( const string& location )
 
     if (!fout)
     {
-        Log( "Failed to open ziplist at %s\n", location.c_str() );
+        Log( __FILENAME__, __LINE__, "Failed to open ziplist at %s", location.c_str() );
         return 1;
     }
 
@@ -411,7 +411,7 @@ int8_t CZip::SaveUnzipList( const string& location )
             if (UnzipFiles.at(i).length()>0)
             {
 #if defined(DEBUG)
-                Log( "Saving file %s to ziplist\n", UnzipFiles.at(i).c_str());
+                Log( __FILENAME__, __LINE__, "Saving file %s to ziplist", UnzipFiles.at(i).c_str() );
 #endif
                 fout << UnzipFiles.at(i) << endl;
             }
@@ -430,7 +430,7 @@ int8_t CZip::LoadUnzipList( const string& location )
 
     if (!fin)
     {
-        Log( "Failed to open unziplist at %s\n", location.c_str() );
+        Log( __FILENAME__, __LINE__, "Failed to open unziplist at %s", location.c_str() );
         return 0;   // Dont stop the app if it cant be opened, default values will be used and then save to file.
     }
 

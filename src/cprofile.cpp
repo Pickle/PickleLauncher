@@ -48,12 +48,12 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
     string          line;
     ifstream        fin;
 
-    Log( "  from location %s\n", location.c_str() );
+    Log( __FILENAME__, __LINE__, "  from location %s", location.c_str() );
     fin.open(location.c_str(), ios_base::in);
 
     if (!fin)
     {
-        Log( "Error: Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Error: Failed to open profile" );
         return 1;
     }
 
@@ -87,7 +87,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                 {
                     if (LoadCmd(fin, line, delimiter))
                     {
-                        Log( "Error: Loading command from %s\n", location.c_str() );
+                        Log( __FILENAME__, __LINE__, "Error: Loading command from %s", location.c_str() );
                         return 1;
                     }
                     readline = false;
@@ -97,7 +97,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                 {
                     if (LoadExt(fin, line, delimiter))
                     {
-                        Log( "Error: Loading extension from %s\n", location.c_str() );
+                        Log( __FILENAME__, __LINE__, "Error: Loading extension from %s", location.c_str() );
                         return 1;
                     }
                     readline = false;
@@ -107,7 +107,7 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
                 {
                     if (LoadEntry(fin, line, delimiter))
                     {
-                        Log( "Error: Loading entry from %s\n", location.c_str() );
+                        Log( __FILENAME__, __LINE__, "Error: Loading entry from %s", location.c_str() );
                         return 1;
                     }
                     readline = false;
@@ -126,19 +126,19 @@ int8_t CProfile::Load( const string& location, const string& delimiter )
     }
     else
     {
-        Log( "Error: Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Error: Failed to open profile" );
         return 1;
     }
 
     // Sanity checks
     if (FilePath.length() == 0)
     {
-        Log( "Error: file path was not read from profile\n" );
+        Log( __FILENAME__, __LINE__, "Error: file path was not read from profile" );
         return 1;
     }
     if (Extensions.size() == 0)
     {
-        Log( "Error: no extensions were read from profile\n" );
+        Log( __FILENAME__, __LINE__, "Error: no extensions were read from profile" );
         return 1;
     }
 
@@ -167,7 +167,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
     }
     else
     {
-        Log( "Error: %s not found\n", PROFILE_CMDPATH );
+        Log( __FILENAME__, __LINE__, "Error: %s not found", PROFILE_CMDPATH );
         return 1;
     }
 
@@ -195,7 +195,7 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
                 }
                 else
                 {
-                    Log( "Error: Uneven number of argument names to values\n line:'%s'\n", line.c_str() );
+                    Log( __FILENAME__, __LINE__, "Error: Uneven number of argument names to values\n line:'%s'", line.c_str() );
                     return 1;
                 }
             }
@@ -212,14 +212,14 @@ int8_t CProfile::LoadCmd( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: Not enough argument parts detected\n line:'%s'\n", line.c_str() );
+            Log( __FILENAME__, __LINE__, "Error: Not enough argument parts detected\n line:'%s'", line.c_str() );
             return 1;
         }
     }
 
     if (count<1)
     {
-        Log( "Error: %s not found at least once\n", PROFILE_CMDARG );
+        Log( __FILENAME__, __LINE__, "Error: %s not found at least once", PROFILE_CMDARG );
         return 1;
     }
 
@@ -248,7 +248,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
 
     if (ext.extName.size() == 0)
     {
-        Log( "Error: no extensions detected\n" );
+        Log( __FILENAME__, __LINE__, "Error: no extensions detected" );
         return 1;
     }
 
@@ -264,7 +264,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
     }
     else
     {
-        Log( "Error: %s not found\n", PROFILE_EXEPATH );
+        Log( __FILENAME__, __LINE__, "Error: %s not found", PROFILE_EXEPATH );
         return 1;
     }
 
@@ -300,7 +300,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
                 }
                 else
                 {
-                    Log( "Error: Uneven number of argument names to values\n line:'%s'\n", line.c_str() );
+                    Log( __FILENAME__, __LINE__, "Error: Uneven number of argument names to values\n line:'%s'", line.c_str() );
                     return 1;
                 }
             }
@@ -317,14 +317,14 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: Not enough argument parts detected\n line:'%s'\n", line.c_str() );
+            Log( __FILENAME__, __LINE__, "Error: Not enough argument parts detected\n line:'%s'", line.c_str() );
             return 1;
         }
     }
 
     if (count<1)
     {
-        Log( "Error: %s not found at least once\n", PROFILE_EXTARG );
+        Log( __FILENAME__, __LINE__, "Error: %s not found at least once", PROFILE_EXTARG );
         return 1;
     }
 
@@ -344,7 +344,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: %s wrong number of parts actual: %d expected: %s\n", PROFILE_ARGFORCE, parts.size(), ARGFORCE_COUNT );
+            Log( __FILENAME__, __LINE__, "Error: %s wrong number of parts actual: %d expected: %s", PROFILE_ARGFORCE, parts.size(), ARGFORCE_COUNT );
             return 1;
         }
         getline( fin, line );
@@ -370,7 +370,7 @@ int8_t CProfile::LoadExt( ifstream& fin, string& line, const string& delimiter )
         }
         else
         {
-            Log( "Error: %s wrong number of parts actual: %d expected: %s\n", PROFILE_EXEFORCE, parts.size(), EXEFORCE_COUNT );
+            Log( __FILENAME__, __LINE__, "Error: %s wrong number of parts actual: %d expected: %s", PROFILE_EXEFORCE, parts.size(), EXEFORCE_COUNT );
             return 1;
         }
         getline( fin, line );
@@ -414,7 +414,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
 
     if (pos2 == string::npos)
     {
-        Log( "Error: A delimiter was expected in entry: %s\n", line.c_str() );
+        Log( __FILENAME__, __LINE__, "Error: A delimiter was expected in entry: %s", line.c_str() );
         return 1;
     }
 
@@ -422,7 +422,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     entry.Alias = line.substr( pos2+1, line.length()-pos2-2 );
 
 #if defined(DEBUG)
-    Log( "DEBUG: Path: '%s' Name: '%s' Alias '%s'\n", entry.Path.c_str(), entry.Name.c_str(), entry.Alias.c_str() );
+    Log( __FILENAME__, __LINE__, "DEBUG: Path: '%s' Name: '%s' Alias '%s'", entry.Path.c_str(), entry.Name.c_str(), entry.Alias.c_str() );
 #endif
 
     // Extension executable
@@ -453,7 +453,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     }
     else
     {
-        Log( "Error: %s not found\n", PROFILE_ENTRY_CMDS );
+        Log( __FILENAME__, __LINE__, "Error: %s not found", PROFILE_ENTRY_CMDS );
         return 1;
     }
 
@@ -468,14 +468,14 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
         {
             if (entry.Custom == true)
             {
-                Log( "Error: %s custom values are present but were not for %s\n", PROFILE_ENTRY_ARGS, PROFILE_ENTRY_CMDS );
+                Log( __FILENAME__, __LINE__, "Error: %s custom values are present but were not for %s", PROFILE_ENTRY_ARGS, PROFILE_ENTRY_CMDS );
             }
         }
         else
         {
             if (entry.CmdValues.size() == 0)
             {
-                Log( "Error: %s custom values are present but were not for %s\n", PROFILE_ENTRY_CMDS,PROFILE_ENTRY_ARGS );
+                Log( __FILENAME__, __LINE__, "Error: %s custom values are present but were not for %s", PROFILE_ENTRY_CMDS, PROFILE_ENTRY_ARGS );
             }
             else
             {
@@ -494,7 +494,7 @@ int8_t CProfile::LoadEntry( ifstream& fin, string& line, const string& delimiter
     }
     else
     {
-        Log( "Error: %s not found\n", PROFILE_ENTRY_ARGS );
+        Log( __FILENAME__, __LINE__, "Error: %s not found", PROFILE_ENTRY_ARGS );
         return 1;
     }
 
@@ -531,7 +531,7 @@ int16_t CProfile::AddEntry( listoption_t& argument, const string& name )
     }
     else
     {
-        Log( "Warning: AddEntry argument.Extension out of range for Extensions\n" );
+        Log( __FILENAME__, __LINE__, "Warning: AddEntry argument.Extension out of range for Extensions" );
         return -1;
     }
     Entries.push_back(entry);
@@ -547,7 +547,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
 
     if (!fout)
     {
-        Log( "Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open profile" );
         return 1;
     }
 
@@ -703,7 +703,7 @@ int8_t CProfile::Save( const string& location, const string& delimiter )
     }
     else
     {
-        Log( "Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open profile" );
         return 1;
     }
     return 0;
@@ -794,8 +794,8 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
                 {
                     if (i > Entries.at(item.Entry).ArgValues.size()-1)
                     {
-                        Log( "Warning: ScanEntry the total arguments does not match the total values for the entry\n" );
-                        Log( "Warning: Adding an entry at 0. You should check the order of the arguments.\n" );
+                        Log( __FILENAME__, __LINE__, "Warning: ScanEntry the total arguments does not match the total values for the entry" );
+                        Log( __FILENAME__, __LINE__, "Warning: Adding an entry at 0. You should check the order of the arguments." );
                         Entries.at(item.Entry).ArgValues.push_back(0);
                     }
 
@@ -865,7 +865,7 @@ int8_t CProfile::ScanEntry( listitem_t& item, vector<listoption_t>& items )
     }
     else
     {
-        Log( "Error ScanEntry ext_index out of range\n" );
+        Log( __FILENAME__, __LINE__, "Error ScanEntry ext_index out of range" );
         return -1;
     }
     return ext_index;
@@ -896,7 +896,7 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
         }
         else
         {
-            Log( "Error: ScanArgument Commands item.Argument out of range\n" );
+            Log( __FILENAME__, __LINE__, "Error: ScanArgument Commands item.Argument out of range" );
             values.push_back( "Error: Check log" );
         }
     }
@@ -919,13 +919,13 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
         }
         else
         {
-            Log( "Error: ScanArgument Extensions item.Argument out of range\n" );
+            Log( __FILENAME__, __LINE__, "Error: ScanArgument Extensions item.Argument out of range" );
             values.push_back( "Error: Check log" );
         }
     }
     else
     {
-        Log( "Error: ScanArgument item type undefined\n" );
+        Log( __FILENAME__, __LINE__, "Error: ScanArgument item type undefined" );
         values.push_back( "Error: Check log" );
     }
 }
@@ -952,7 +952,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
     {
         if((dp = opendir(location.c_str())) == NULL)
         {
-            Log( "Failed to open dir path %s\n", location.c_str() );
+            Log( __FILENAME__, __LINE__, "Failed to open dir path %s", location.c_str() );
             return 1;
         }
 
@@ -1002,7 +1002,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
             }
             else
             {
-                Log( "Error: filename length was 0\n" );
+                Log( __FILENAME__, __LINE__, "Error: filename length was 0" );
             }
         }
         closedir(dp);
@@ -1119,7 +1119,7 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
                 }
                 else
                 {
-                    Log( "Error: Scandir alpha_index out of range\n" );
+                    Log( __FILENAME__, __LINE__, "Error: Scandir alpha_index out of range" );
                     return 1;
                 }
             }

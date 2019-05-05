@@ -28,7 +28,7 @@ CSystem::CSystem() : CBase()
     memdev = open( "/dev/mem", O_RDWR );
     if (memdev == 0)
     {
-        Log( "Could not open /dev/mem\n" );
+        Log( __FILENAME__, __LINE__, "Could not open /dev/mem" );
     }
     else
     {
@@ -36,7 +36,7 @@ CSystem::CSystem() : CBase()
 
         if (memregs == MAP_FAILED)
         {
-            Log( "Could not mmap hardware registers!\n" );
+            Log( __FILENAME__, __LINE__, "Could not mmap hardware registers!" );
             close(memdev);
         }
     }
@@ -59,7 +59,7 @@ void CSystem::SetCPUClock( uint16_t& mhz )
     // Range check
     if ((mhz == 0) || (mhz > CPU_CLOCK_MAX))
     {
-        Log( "CPU mhz out of range, resetting to default. Value is now %d and allowed values should be between 0 and %d Mhz.\n", mhz, CPU_CLOCK_MAX );
+        Log( __FILENAME__, __LINE__, "CPU mhz out of range, resetting to default. Value is now %d and allowed values should be between 0 and %d Mhz.", mhz, CPU_CLOCK_MAX );
         mhz = CPU_CLOCK_DEF;
     }
 
@@ -99,6 +99,6 @@ void CSystem::SetCPUClock( uint16_t& mhz )
     }
 
 #else
-    Log( "Setting CPU Clock not supported on this machine.\n" );
+    Log( __FILENAME__, __LINE__, "Setting CPU Clock not supported on this machine." );
 #endif
 }

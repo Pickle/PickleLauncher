@@ -193,9 +193,9 @@ void CSelector::ProcessArguments( int argc, char** argv )
     }
 
 #if defined(DEBUG)
-    Log( "Running from '%s'\n", launcher.c_str() );
+    Log( __FILENAME__, __LINE__, "Running from '%s'", launcher.c_str() );
 #endif
-    Log( "Running from '%s' as '%s'\n", Profile.LauncherPath.c_str(), Profile.LauncherName.c_str() );
+    Log( __FILENAME__, __LINE__, "Running from '%s' as '%s'", Profile.LauncherPath.c_str(), Profile.LauncherName.c_str() );
 
     for (uint8_t arg_index=0; arg_index<argc; arg_index++ )
     {
@@ -228,28 +228,28 @@ int8_t CSelector::OpenResources( void )
     uint32_t flags;
     string text;
 
-    Log( "Loading config.\n" );
+    Log( __FILENAME__, __LINE__, "Loading config." );
     if (Config.Load( ConfigPath ))
     {
-        Log( "Failed to load config\n" );
+        Log( __FILENAME__, __LINE__, "Failed to load config" );
         return 1;
     }
 
-    Log( "Loading ziplist.\n" );
+    Log( __FILENAME__, __LINE__, "Loading ziplist." );
     if ((Config.UseZipSupport == true) && (Profile.Minizip.LoadUnzipList( ZipListPath )))
     {
-        Log( "Failed to load ziplist\n" );
+        Log( __FILENAME__, __LINE__, "Failed to load ziplist" );
         return 1;
     }
 
     // Initialize defaults, Video and Audio subsystems
-    Log( "Initializing SDL.\n" );
+    Log( __FILENAME__, __LINE__, "Initializing SDL." );
     if (SDL_Init( SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_TIMER|SDL_INIT_JOYSTICK )==-1)
     {
-        Log( "Failed to initialize SDL: %s.\n", SDL_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to initialize SDL: %s.", SDL_GetError() );
         return 1;
     }
-    Log( "SDL initialized.\n" );
+    Log( __FILENAME__, __LINE__, "SDL initialized." );
 
     // Setup SDL Screen
     flags = SCREEN_FLAGS;
@@ -260,7 +260,7 @@ int8_t CSelector::OpenResources( void )
     Screen = SDL_SetVideoMode( Config.ScreenWidth, Config.ScreenHeight, Config.ScreenDepth, flags );
     if (Screen == NULL)
     {
-        Log( "Failed to %dx%dx%d video mode: %s\n", Config.ScreenWidth, Config.ScreenHeight, Config.ScreenDepth, SDL_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to %dx%dx%d video mode: %s", Config.ScreenWidth, Config.ScreenHeight, Config.ScreenDepth, SDL_GetError() );
         return 1;
     }
 
@@ -269,18 +269,18 @@ int8_t CSelector::OpenResources( void )
 
     // Load joystick
 #if !defined(PANDORA) && !defined(X86)
-    Log( "Joystick detected: %d\n", SDL_NumJoysticks() );
+    Log( __FILENAME__, __LINE__, "Joystick detected: %d", SDL_NumJoysticks() );
     Joystick = SDL_JoystickOpen(0);
     if (Joystick == NULL)
     {
-        Log( "Warning failed to open first joystick: %s\n", SDL_GetError() );
+        Log( __FILENAME__, __LINE__, "Warning failed to open first joystick: %s", SDL_GetError() );
     }
 #endif
 
     // Setup TTF SDL
     if (TTF_Init() == -1)
     {
-        Log( "Failed to init TTF_Init: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to init TTF_Init: %s", TTF_GetError() );
         return 1;
     }
 
@@ -288,26 +288,26 @@ int8_t CSelector::OpenResources( void )
     Fonts.at(FONT_SIZE_SMALL) = TTF_OpenFont( Config.PathFont.c_str(), Config.FontSizes.at(FONT_SIZE_SMALL) );
     if (!Fonts.at(FONT_SIZE_SMALL))
     {
-        Log( "Failed to open small TTF_OpenFont: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to open small TTF_OpenFont: %s", TTF_GetError() );
         return 1;
     }
     Fonts.at(FONT_SIZE_MEDIUM) = TTF_OpenFont( Config.PathFont.c_str(), Config.FontSizes.at(FONT_SIZE_MEDIUM) );
     if (!Fonts.at(FONT_SIZE_MEDIUM))
     {
-        Log( "Failed to open medium TTF_OpenFont: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to open medium TTF_OpenFont: %s", TTF_GetError() );
         return 1;
     }
     Fonts.at(FONT_SIZE_LARGE) = TTF_OpenFont( Config.PathFont.c_str(), Config.FontSizes.at(FONT_SIZE_LARGE) );
     if (!Fonts.at(FONT_SIZE_LARGE))
     {
-        Log( "Failed to open large TTF_OpenFont: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to open large TTF_OpenFont: %s", TTF_GetError() );
         return 1;
     }
 
-    Log( "Loading profile.\n" );
+    Log( __FILENAME__, __LINE__, "Loading profile." );
     if (Profile.Load( ProfilePath, Config.Delimiter ))
     {
-        Log( "Failed to load profile\n" );
+        Log( __FILENAME__, __LINE__, "Failed to load profile" );
         return 1;
     }
 
@@ -352,7 +352,7 @@ int8_t CSelector::OpenResources( void )
     ImageTitle = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_LARGE), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
     if (ImageTitle == NULL)
     {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
         return 1;
     }
 
@@ -361,7 +361,7 @@ int8_t CSelector::OpenResources( void )
     ImageAbout = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles) );
     if (ImageAbout == NULL)
     {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
         return 1;
     }
 
@@ -384,13 +384,13 @@ void CSelector::CloseResources( int8_t result )
     // Close joystick
     if (Joystick != NULL)
     {
-        Log( "Closing SDL Joystick.\n" );
+        Log( __FILENAME__, __LINE__, "Closing SDL Joystick." );
         SDL_JoystickClose( Joystick );
         Joystick = NULL;
     }
 
     // Close fonts
-    Log( "Closing TTF fonts.\n" );
+    Log( __FILENAME__, __LINE__, "Closing TTF fonts." );
     if (Fonts.at(FONT_SIZE_SMALL) != NULL)
     {
         TTF_CloseFont( Fonts.at(FONT_SIZE_SMALL) );
@@ -426,10 +426,10 @@ void CSelector::CloseResources( int8_t result )
         FREE_IMAGE( ImageButtons.at(button_index) );
     }
 
-    Log( "Quitting TTF.\n" );
+    Log( __FILENAME__, __LINE__, "Quitting TTF." );
     TTF_Quit();
 
-    Log( "Quitting SDL.\n" );
+    Log( __FILENAME__, __LINE__, "Quitting SDL." );
     SDL_Quit();
 
     // Flush all std buffers before exit
@@ -493,49 +493,49 @@ void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
         if( x < 0 )
         {
             x = 0;
-            Log( "ERROR: UpdateRect X was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect X was out of bounds" );
         }
 
         if( y < 0 )
         {
             y = 0;
-            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect Y was out of bounds" );
         }
 
         if( h < 0 )
         {
             h = 0;
-            Log( "ERROR: UpdateRect X was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect X was out of bounds" );
         }
 
         if( w < 0 )
         {
             w = 0;
-            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect Y was out of bounds" );
         }
 
         if( x > Config.ScreenWidth )
         {
             x = Config.ScreenWidth-1;
-            Log( "ERROR: UpdateRect X was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect X was out of bounds" );
         }
 
         if( y > Config.ScreenHeight )
         {
             y = Config.ScreenHeight-1;
-            Log( "ERROR: UpdateRect Y was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect Y was out of bounds" );
         }
 
         if( x + w > Config.ScreenWidth )
         {
             w = Config.ScreenWidth-x;
-            Log( "ERROR: UpdateRect W was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect W was out of bounds" );
         }
 
         if( y + h > Config.ScreenHeight )
         {
             h = Config.ScreenHeight-y;
-            Log( "ERROR: UpdateRect H was out of bounds\n" );
+            Log( __FILENAME__, __LINE__, "ERROR: UpdateRect H was out of bounds" );
         }
 
         rect.x = x;
@@ -559,7 +559,7 @@ void CSelector::UpdateScreen( void )
         {
             if (SDL_Flip( Screen ) != 0)
             {
-                Log( "Failed to swap the buffers: %s\n", SDL_GetError() );
+                Log( __FILENAME__, __LINE__, "Failed to swap the buffers: %s", SDL_GetError() );
             }
         }
         else
@@ -682,7 +682,7 @@ void CSelector::SelectMode( void )
             break;
         default:
             Mode = MODE_SELECT_ENTRY;
-            Log( "Error: Unknown Mode\n" );
+            Log( __FILENAME__, __LINE__, "Error: Unknown Mode" );
             break;
     }
 
@@ -788,7 +788,7 @@ void CSelector::DirectoryUp( void )
     }
     else
     {
-        Log( "Error: Filepath is empty\n" );
+        Log( __FILENAME__, __LINE__, "Error: Filepath is empty" );
     }
 }
 
@@ -807,7 +807,7 @@ void CSelector::DirectoryDown( void )
     }
     else
     {
-        Log( "Error: Item index of %d too large for size of scanitems %d\n", DisplayList.at(MODE_SELECT_ENTRY).absolute, ItemsEntry.size() );
+        Log( __FILENAME__, __LINE__, "Error: Item index of %d too large for size of scanitems %d", DisplayList.at(MODE_SELECT_ENTRY).absolute, ItemsEntry.size() );
     }
 }
 
@@ -854,7 +854,7 @@ void CSelector::RescanItems( void )
             break;
         default:
             total = 0;
-            Log( "Error: Unknown Mode\n" );
+            Log( __FILENAME__, __LINE__, "Error: Unknown Mode" );
             break;
     }
 
@@ -921,7 +921,7 @@ void CSelector::PopulateList( void )
             PopModeOption();
             break;
         default:
-            Log( "Error: CSelector::PopulateList Unknown Mode\n" );
+            Log( __FILENAME__, __LINE__, "Error: CSelector::PopulateList Unknown Mode" );
             break;
     }
 }
@@ -968,7 +968,7 @@ void CSelector::PopModeEntry( void )
         }
         else
         {
-            Log( "Error: CSelector::PopulateModeSelectEntry Index Error\n" );
+            Log( __FILENAME__, __LINE__, "Error: CSelector::PopulateModeSelectEntry Index Error" );
         }
     }
 
@@ -998,7 +998,7 @@ void CSelector::PopModeArgument( void )
         }
         else
         {
-            Log( "Error: PopModeArgument index is out of range\n" );
+            Log( __FILENAME__, __LINE__, "Error: PopModeArgument index is out of range" );
         }
     }
 }
@@ -1068,7 +1068,7 @@ void CSelector::PopModeValue( void )
                         }
                         else
                         {
-                            Log( "Error: Could not create new entry\n" );
+                            Log( __FILENAME__, __LINE__, "Error: Could not create new entry" );
                         }
                     }
                     else if (index == defvalue)
@@ -1135,13 +1135,13 @@ void CSelector::PopModeValue( void )
             }
             else
             {
-                Log( "Error: PopModeValue index is out of range\n" );
+                Log( __FILENAME__, __LINE__, "Error: PopModeValue index is out of range" );
             }
         }
     }
     else
     {
-        Log( "Error: PopModeValue argument index out of range\n" );
+        Log( __FILENAME__, __LINE__, "Error: PopModeValue argument index out of range" );
     }
 }
 
@@ -1218,7 +1218,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
         }
         else
         {
-            Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+            Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
             return 1;
         }
     }
@@ -1316,7 +1316,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
             }
             else
             {
-                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
                 return 1;
             }
         }
@@ -1446,7 +1446,7 @@ int8_t CSelector::ConfigureButtons( void )
             ButtonModesRight.at(3) = EVENT_NONE;
             break;
         default:
-            Log( "Error: Unknown Mode\n" );
+            Log( __FILENAME__, __LINE__, "Error: Unknown Mode" );
             return 1;
             break;
     }
@@ -1580,7 +1580,7 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
         }
         else
         {
-            Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+            Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
             return 1;
         }
     }
@@ -1660,7 +1660,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
                 }
                 else
                 {
-                    Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                    Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
                     return 1;
                 }
             }
@@ -1706,7 +1706,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
             }
             else
             {
-                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+                Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
                 return 1;
             }
 
@@ -1787,7 +1787,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
         }
         else
         {
-            Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError());
+            Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
             return 1;
         }
         DrawState_Index = false;
@@ -1823,7 +1823,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
             ImageZipMode = TTF_RenderText_Solid(Fonts.at(FONT_SIZE_SMALL), text.c_str(), Config.Colors.at(Config.ColorFontFiles));
             if (ImageZipMode == NULL)
             {
-                Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError());
+                Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
                 return 1;
             }
         }
@@ -1874,7 +1874,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
     }
     else
     {
-        Log( "Failed to create TTF surface with TTF_RenderText_Solid: %s\n", TTF_GetError() );
+        Log( __FILENAME__, __LINE__, "Failed to create TTF surface with TTF_RenderText_Solid: %s", TTF_GetError() );
         return 1;
     }
 #endif
@@ -1903,7 +1903,7 @@ int8_t CSelector::RunExec( uint16_t selection )
 
     if (!CheckRange( selection, ItemsEntry.size() ))
     {
-        Log( "Error: RunExec selection is out of range\n" );
+        Log( __FILENAME__, __LINE__, "Error: RunExec selection is out of range" );
         return 1;
     }
 
@@ -2021,7 +2021,7 @@ int8_t CSelector::RunExec( uint16_t selection )
                 {
                     if (i == argforce->Argument)
                     {
-                        Log( "Setting argforce on arg %d\n", i );
+                        Log( __FILENAME__, __LINE__, "Setting argforce on arg %d", i );
                         value = argforce->Value;
                         break;
                     }
@@ -2045,7 +2045,7 @@ int8_t CSelector::RunExec( uint16_t selection )
                     }
                     else
                     {
-                        Log( "Error: RunExec argument->Default is out of range\n" );
+                        Log( __FILENAME__, __LINE__, "Error: RunExec argument->Default is out of range" );
                         return 1;
                     }
                 }
@@ -2096,7 +2096,7 @@ int8_t CSelector::RunExec( uint16_t selection )
     }
     else
     {
-        Log( "Warning no extension was found for this file type\n" );
+        Log( __FILENAME__, __LINE__, "Warning no extension was found for this file type" );
         return 1;
     }
 
@@ -2114,19 +2114,19 @@ int8_t CSelector::RunExec( uint16_t selection )
     /* Print out all the commands in a list form  */
     SplitString( ";", command, commands );
 
-    Log( "Running command start:\n");
+    Log( __FILENAME__, __LINE__, "Running command start:" );
     for(uint16_t i=0; i<commands.size(); i++)
     {
-        Log( "%02d '%s'\n", i, commands.at(i).c_str());
+        Log( __FILENAME__, __LINE__, "%02d '%s'", i, commands.at(i).c_str() );
     }
-    Log( "Running command end:\n");
+    Log( __FILENAME__, __LINE__, "Running command end:" );
 
     CloseResources(0);
 
     execlp( "/bin/sh", "/bin/sh", "-c", command.c_str(), NULL );
 
     //if execution continues then something went wrong and as we already called SDL_Quit we cannot continue, try reloading
-    Log( "Error executing selected application, re-launching %s\n", APPNAME);
+    Log( __FILENAME__, __LINE__, "Error executing selected application, re-launching %s", APPNAME );
 
     chdir( Profile.LauncherPath.c_str() );
     execlp( Profile.LauncherName.c_str(), Profile.LauncherName.c_str(), NULL );
@@ -2147,7 +2147,7 @@ int8_t CSelector::PollInputs( void )
             EventReleased.at(index)     = false;
             EventPressCount.at(index)   = EVENT_LOOPS_OFF;
 #if defined(DEBUG)
-            //Log( "DEBUG EventReleased %d\n", index );
+            //Log( __FILENAME__, __LINE__, "DEBUG EventReleased %d", index );
 #endif
         }
         else if (EventPressCount.at(index) != EVENT_LOOPS_OFF)
@@ -2163,7 +2163,7 @@ int8_t CSelector::PollInputs( void )
     // Sanity check
     if (!CheckRange( Mode, DisplayList.size() ))
     {
-        Log( "Error: PollInputs Mode out of range\n" );
+        Log( __FILENAME__, __LINE__, "Error: PollInputs Mode out of range" );
         return 1;
     }
 
@@ -2212,7 +2212,7 @@ int8_t CSelector::PollInputs( void )
                     }
                 }
 #if defined(DEBUG)
-                Log( "DEBUG SDL_KEYDOWN name: %s sym: %d\n", keyname.c_str(), event.key.keysym.sym );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_KEYDOWN name: %s sym: %d", keyname.c_str(), event.key.keysym.sym );
 #endif
                 break;
 
@@ -2230,7 +2230,7 @@ int8_t CSelector::PollInputs( void )
                 }
 #if defined(DEBUG)
                 keyname = SDL_GetKeyName( event.key.keysym.sym );
-                Log( "DEBUG SDL_KEYUP name: %s sym: %d\n", keyname.c_str(), event.key.keysym.sym );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_KEYUP name: %s sym: %d", keyname.c_str(), event.key.keysym.sym );
 #endif
                 break;
 
@@ -2247,7 +2247,7 @@ int8_t CSelector::PollInputs( void )
                     }
                 }
 #if defined(DEBUG)
-                Log( "DEBUG SDL_JOYBUTTONDOWN button: %d\n", event.jbutton.button );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_JOYBUTTONDOWN button: %d", event.jbutton.button );
 #endif
                 break;
 
@@ -2264,7 +2264,7 @@ int8_t CSelector::PollInputs( void )
                     }
                 }
 #if defined(DEBUG)
-                Log( "DEBUG SDL_JOYBUTTONUP button: %d\n", event.jbutton.button );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_JOYBUTTONUP button: %d", event.jbutton.button );
 #endif
                 break;
 
@@ -2317,7 +2317,7 @@ int8_t CSelector::PollInputs( void )
                     EventReleased.at(EVENT_PAGE_DOWN)   = true;
                 }
 #if defined(DEBUG)
-                Log( "DEBUG SDL_JOYAXISMOTION axis: %d value: %d\n", event.jaxis.axis, event.jaxis.value );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_JOYAXISMOTION axis: %d value: %d", event.jaxis.axis, event.jaxis.value );
 #endif
                 break;
 
@@ -2342,7 +2342,7 @@ int8_t CSelector::PollInputs( void )
                     }
                 }
 #if defined(DEBUG)
-                Log( "DEBUG SDL_MOUSEMOTION x: %d y: %d\n", event.motion.x, event.motion.y );
+                Log( __FILENAME__, __LINE__, "DEBUG SDL_MOUSEMOTION x: %d y: %d", event.motion.x, event.motion.y );
 #endif
                 break;
 
@@ -2362,7 +2362,7 @@ int8_t CSelector::PollInputs( void )
                                 {
                                     EventPressCount.at(ButtonModesLeft.at(index)) = EVENT_LOOPS_ON;
 #if defined(DEBUG)
-                                    Log( "DEBUG LeftButton Active %d %d\n", ButtonModesLeft.at(index), index );
+                                    Log( __FILENAME__, __LINE__, "DEBUG LeftButton Active %d %d", ButtonModesLeft.at(index), index );
 #endif
                                 }
                             }
@@ -2375,7 +2375,7 @@ int8_t CSelector::PollInputs( void )
                                 {
                                     EventPressCount.at(ButtonModesRight.at(index)) = EVENT_LOOPS_ON;
 #if defined(DEBUG)
-                                    Log( "DEBUG RightButton Active %d %d\n", ButtonModesRight.at(index), index );
+                                    Log( __FILENAME__, __LINE__, "DEBUG RightButton Active %d %d", ButtonModesRight.at(index), index );
 #endif
                                 }
                             }
@@ -2407,7 +2407,7 @@ int8_t CSelector::PollInputs( void )
                             EventReleased.at(index) = true;
                         }
 #if defined(DEBUG)
-                        Log( "DEBUG Releasing all mouse events\n" );
+                        Log( __FILENAME__, __LINE__, "DEBUG Releasing all mouse events" );
 #endif
                         break;
                     default:

@@ -48,6 +48,7 @@ using namespace std;
 
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))    /**< Return minimum of two numbers. */
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))    /**< Return maximum of two numbers. */
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 /** @brief Generic class to hold any common methods usable by any other class
  */
@@ -60,9 +61,11 @@ class CBase
         virtual ~CBase();
 
         /** @brief Logging function
-         * @param output : formatting string to write to the log
+         * @param file : the path where the message was sent
+         * @param line : the numeric line the message was sent
+         * @param message : formatting string to write to the log
          */
-        void            Log                 ( const char* output, ... );
+        void            Log( const char* file, const int32_t line, const char* message, ... );
 
         /** @brief Checks a value is between 0 and size
          * @param value : value for the range check

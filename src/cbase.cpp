@@ -30,16 +30,23 @@ CBase::~CBase()
 {
 }
 
-void CBase::Log( const char* output, ... )
+void CBase::Log( const char* file, const int32_t line, const char* message, ... )
 {
     va_list fmtargs;
     char buffer[1024];
 
-    va_start( fmtargs, output );
-    vsnprintf( buffer, sizeof(buffer)-1, output, fmtargs );
+    va_start( fmtargs, message );
+    vsnprintf( buffer, sizeof(buffer)-1, message, fmtargs );
     va_end( fmtargs );
 
-    fprintf( stdout, "%s", buffer );
+    if (file != NULL)
+    {
+        fprintf( stdout, "%-50s file:%-15s line:%d\n", buffer, file, line );
+    }
+    else
+    {
+        fprintf( stdout, "%s\n", buffer );
+    }
 
 #if defined(DEBUG)
     FILE* fout = fopen( "/tmp/log.txt", "a" );
@@ -118,7 +125,7 @@ SDL_Surface* CBase::LoadImage( const string& filename )
     }
     else
     {
-  		//Log( "LoadImage -> Could not load image: %s at path='%s'\n", IMG_GetError(), filename.c_str() );
+  		//Log( __FILENAME__, __LINE__, "LoadImage -> Could not load image: %s at path='%s'", IMG_GetError(), filename.c_str() );
   		return NULL;
     }
 
@@ -246,7 +253,7 @@ void CBase::CheckPath( string& path )
     }
     else
     {
-        Log( "Warning: CheckPath path too short\n" );
+        Log( __FILENAME__, __LINE__, "Warning: CheckPath path too short" );
     }
 
     path = strreplace( path, "~/", string(getenv("HOME"))+"/" );

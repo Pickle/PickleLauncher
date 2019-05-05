@@ -203,12 +203,12 @@ int8_t CConfig::Load( const string& location )
     string          label;
     ifstream        fin;
 
-    Log( "  from location %s\n", location.c_str() );
+    Log( __FILENAME__, __LINE__, "  from location %s", location.c_str() );
     fin.open(location.c_str(), ios_base::in);
 
     if (!fin)
     {
-        Log( "Failed to open config\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open config" );
         return 0;   // Dont stop the app if it cant be opened, default values will be used and then save to file.
     }
 
@@ -220,7 +220,7 @@ int8_t CConfig::Load( const string& location )
             getline(fin,line);
 
 #if defined(DEBUG)
-            Log( "%s\n", line.c_str() );
+            Log( __FILENAME__, __LINE__, "%s", line.c_str() );
 #endif
 
             if (line.length() > 0)
@@ -342,7 +342,7 @@ int8_t CConfig::Load( const string& location )
     }
     else
     {
-        Log( "Failed to open config\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open config" );
         return 1;
     }
 
@@ -371,7 +371,7 @@ int8_t CConfig::Save( const string& location )
 
     if (!fout)
     {
-        Log( "Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open profile" );
         return 1;
     }
 
@@ -505,7 +505,7 @@ int8_t CConfig::Save( const string& location )
     }
     else
     {
-        Log( "Failed to open profile\n" );
+        Log( __FILENAME__, __LINE__, "Failed to open profile" );
         return 1;
     }
     return 0;
