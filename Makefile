@@ -11,7 +11,7 @@ BUILDTYPE = release
 CXXFLAGS     = -Wall -Wextra -O3
 ZIP_CFLAGS   = $(CXXFLAGS) -Wno-unused-parameter
 # Linker flags
-BASE_LDFLAGS = -s -L$(LIBRARY) -lSDL_ttf -lSDL_image -lSDL -lz
+
 
 # Target compiler options
 ifeq ($(BUILDTARGET),PANDORA)
@@ -20,8 +20,9 @@ TOOLS    = bin
 TARGET   = arm-none-linux-gnueabi-
 INCLUDE  = $(PREFIX)/usr/include
 LIBRARY  = $(PREFIX)/usr/lib
+USE_SDL2 = False
 CXXFLAGS += -DPANDORA
-LDFLAGS  = $(BASE_LDFLAGS) -lfreetype -ltiff -lpng12 -ljpeg -lts
+PLATFORM_LDFLAGS = -lfreetype -ltiff -lpng12 -ljpeg -lts
 else
 ifeq ($(BUILDTARGET),CAANOO)
 PREFIX   = $(CAANOOSDK)
@@ -29,8 +30,9 @@ TOOLS    = tools/gcc-4.2.4-glibc-2.7-eabi/bin
 TARGET   = arm-gph-linux-gnueabi-
 INCLUDE  = $(PREFIX)/DGE/include
 LIBRARY  = $(PREFIX)/DGE/lib/target
+USE_SDL2 = False
 CXXFLAGS += -DCAANOO
-LDFLAGS  = $(BASE_LDFLAGS)
+PLATFORM_LDFLAGS =
 else
 ifeq ($(BUILDTARGET),WIZ)
 PREFIX   = $(WIZSDK)
@@ -38,8 +40,9 @@ TOOLS    = bin
 TARGET   = arm-openwiz-linux-gnu-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
+USE_SDL2 = False
 CXXFLAGS += -DWIZ
-LDFLAGS  = $(BASE_LDFLAGS) -lfreetype
+PLATFORM_LDFLAGS = -lfreetype
 else
 ifeq ($(BUILDTARGET),GP2X)
 PREFIX   = $(GP2XSDK)
@@ -47,8 +50,9 @@ TOOLS    = bin
 TARGET   = arm-open2x-linux-
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
+USE_SDL2 = False
 CXXFLAGS += -DGP2X
-LDFLAGS  = -static $(BASE_LDFLAGS) -lfreetype -lpng12 -lpthread -ldl
+PLATFORM_LDFLAGS = -static -lfreetype -lpng12 -lpthread -ldl
 else
 ifeq ($(BUILDTARGET),GCW)
 PREFIX   = $(GCWSDK)
@@ -56,26 +60,50 @@ TOOLS    = bin
 TARGET   = mipsel-gcw0-linux-uclibc-
 INCLUDE  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/include
 LIBRARY  = $(PREFIX)/mipsel-gcw0-linux-uclibc/sysroot/usr/lib
+USE_SDL2 = False
 CXXFLAGS += -DGCW
-LDFLAGS  = $(BASE_LDFLAGS) -lpthread
+PLATFORM_LDFLAGS = -lpthread
+else
+ifeq ($(BUILDTARGET),TRIMUI)
+PREFIX   = $(TRIMUISDK)
+TOOLS    = bin
+TARGET   = aarch64-linux-gnu-
+INCLUDE  = $(PREFIX)/include
+LIBRARY  = $(PREFIX)/lib
+USE_SDL2 = True
+CXXFLAGS += -DTRIMUI
+PLATFORM_LDFLAGS = -lfreetype -lpthread -lbz2
 else # default linux
 PREFIX   = /usr
 TOOLS    = bin
 TARGET   =
+USE_SDL2 = True
 INCLUDE  = $(PREFIX)/include
 LIBRARY  = $(PREFIX)/lib
-LDFLAGS  = $(BASE_LDFLAGS)
+PLATFORM_LDFLAGS =
+endif
 endif
 endif
 endif
 endif
 endif
 
-# Assign includes
-CXXFLAGS += -I$(INCLUDE) -I$(INCLUDE)/SDL
+ifeq ($(USE_SDL2),True)
+SDLVER=SDL2
+else
+SDLVER=SDL
+endif
+
+# Setup SDL target
+CXXFLAGS += -I$(INCLUDE) -I$(INCLUDE)/$(SDLVER)
+BASE_LDFLAGS = -L$(LIBRARY) -l$(SDLVER)_ttf -l$(SDLVER)_image -l$(SDLVER) -lz
 
 ifeq ($(BUILDTYPE),debug)
 CXXFLAGS += -DDEBUG
+
+LDFLAGS  = $(BASE_LDFLAGS) $(PLATFORM_LDFLAGS)
+else
+LDFLAGS  = -s $(BASE_LDFLAGS) $(PLATFORM_LDFLAGS)
 endif
 
 # Source files

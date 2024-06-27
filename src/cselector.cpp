@@ -59,9 +59,15 @@ CSelector::CSelector() : CBase(),
         FrameEndTime        (0),
         FrameStartTime      (0),
         FrameDelay          (0),
+#if SDL_VERSION_ATLEAST(2,0,0)
+        Window              (NULL),
+        Renderer            (NULL),
+        WindowBounds        (),
+#endif
+        Screen              (NULL),
+        PixelFormat         (NULL),
         Mouse               (),
         Joystick            (NULL),
-        Screen              (NULL),
         ImageBackground     (NULL),
         ImagePointer        (NULL),
         ImageSelectPointer  (NULL),
@@ -255,8 +261,40 @@ int8_t CSelector::OpenResources( void )
     flags = SCREEN_FLAGS;
     if (Config.Fullscreen == true)
     {
-        flags |= SDL_FULLSCREEN;
+        flags |= FULLSCREEN;
     }
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+    SDL_GetDisplayUsableBounds( 0, &WindowBounds );
+
+    Window = SDL_CreateWindow("PickleLauncher", WindowBounds.x, WindowBounds.y,
+                              Config.ScreenWidth, Config.ScreenHeight, flags);
+
+    if (Window == NULL)
+    {
+        Log( __FILENAME__, __LINE__, "Failed to %dx%d video mode: %s", Config.ScreenWidth, Config.ScreenHeight, SDL_GetError() );
+        return 1;
+    }
+
+    Screen = SDL_GetWindowSurface( Window );
+
+    if (Screen == NULL)
+    {
+        Log( __FILENAME__, __LINE__, "Failed to get screen: %s", SDL_GetError() );
+        return 1;
+    }
+
+    Renderer = SDL_CreateSoftwareRenderer( Screen );
+
+    if (Renderer == NULL)
+    {
+        Log( __FILENAME__, __LINE__, "Failed to get renderer: %s", SDL_GetError() );
+        return 1;
+    }
+
+    PixelFormat = SDL_AllocFormat( SDL_GetWindowPixelFormat(Window) );
+#else /* SDL 1.2 */
+
     Screen = SDL_SetVideoMode( Config.ScreenWidth, Config.ScreenHeight, Config.ScreenDepth, flags );
     if (Screen == NULL)
     {
@@ -264,8 +302,11 @@ int8_t CSelector::OpenResources( void )
         return 1;
     }
 
+    PixelFormat = SDL_GetVideoSurface()->format;
+
     // Refresh entire screen for the first frame
     UpdateRect( 0, 0, Config.ScreenWidth, Config.ScreenHeight );
+#endif
 
     // Load joystick
 #if !defined(PANDORA) && !defined(X86)
@@ -304,7 +345,7 @@ int8_t CSelector::OpenResources( void )
         return 1;
     }
 
-    Log( __FILENAME__, __LINE__, "Loading profile." );
+    Log( __FILENAME__, __LINE__, "Loading profile: %s", ProfilePath.c_str() );
     if (Profile.Load( ProfilePath, Config.Delimiter ))
     {
         Log( __FILENAME__, __LINE__, "Failed to load profile" );
@@ -425,6 +466,23 @@ void CSelector::CloseResources( int8_t result )
     {
         FREE_IMAGE( ImageButtons.at(button_index) );
     }
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+    if (PixelFormat != NULL)
+    {
+        SDL_FreeFormat( PixelFormat );
+    }
+
+    if (Renderer != NULL)
+    {
+        SDL_DestroyRenderer( Renderer );
+    }
+
+    if (Window != NULL)
+    {
+        SDL_DestroyWindow( Window );
+    }
+#endif
 
     Log( __FILENAME__, __LINE__, "Quitting TTF." );
     TTF_Quit();
@@ -549,6 +607,11 @@ void CSelector::UpdateRect( int16_t x, int16_t y, int16_t w, int16_t h )
 
 void CSelector::UpdateScreen( void )
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+    SDL_UpdateWindowSurface( Window );
+
+    FramesDrawn++;
+#else /* SDL 1.2 */
 #if defined(DEBUG_FORCE_REDRAW)
     Redraw = true;
 #endif
@@ -557,6 +620,7 @@ void CSelector::UpdateScreen( void )
     {
         if (Config.ScreenFlip == true)
         {
+
             if (SDL_Flip( Screen ) != 0)
             {
                 Log( __FILENAME__, __LINE__, "Failed to swap the buffers: %s", SDL_GetError() );
@@ -582,6 +646,7 @@ void CSelector::UpdateScreen( void )
         }
     }
     ScreenRectsDirty.clear();
+#endif
 
     FrameEndTime = SDL_GetTicks();
     FrameDelay   = (MS_PER_SEC/FRAMES_PER_SEC) - (FrameEndTime - FrameStartTime);
@@ -1163,6 +1228,11 @@ void CSelector::LoadPreview( const string& name )
     FREE_IMAGE( ImagePreview );
 
     filename = Config.PreviewsPath + "/" + name.substr( 0, name.find_last_of(".")) + ".png";
+
+#if defined(DEBUG)
+    Log( __FILENAME__, __LINE__, "Loading preview picture: %s", filename.c_str() );
+#endif
+
     preview = LoadImage( filename );
     if (preview != NULL)
     {
@@ -1387,7 +1457,7 @@ void CSelector::DrawBackground( void )
     }
     else
     {
-        SDL_FillRect( Screen, NULL, rgb_to_int(Config.Colors.at(Config.ColorBackground)) );
+        SDL_FillRect( Screen, NULL, rgb_to_int(Config.Colors.at(Config.ColorBackground), PixelFormat) );
     }
 }
 
@@ -1565,7 +1635,7 @@ int8_t CSelector::DrawButton( uint8_t button, TTF_Font* font, SDL_Rect& location
     }
     else
     {
-        SDL_FillRect( Screen, &location, rgb_to_int(Config.Colors.at(Config.ColorButton)) );
+        SDL_FillRect( Screen, &location, rgb_to_int(Config.Colors.at(Config.ColorButton), PixelFormat) );
     }
 
     if (Config.ShowLabels == true)
@@ -2384,12 +2454,14 @@ int8_t CSelector::PollInputs( void )
                             }
                         }
                         break;
+#if !SDL_VERSION_ATLEAST(2,0,0)
                     case SDL_BUTTON_WHEELUP:
                         EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
                         break;
                     case SDL_BUTTON_WHEELDOWN:
                         EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
                         break;
+#endif
                     default:
                         break;
                 }
@@ -2400,8 +2472,10 @@ int8_t CSelector::PollInputs( void )
                     case SDL_BUTTON_LEFT:
                     case SDL_BUTTON_MIDDLE:
                     case SDL_BUTTON_RIGHT:
+#if !SDL_VERSION_ATLEAST(2,0,0)
                     case SDL_BUTTON_WHEELUP:
                     case SDL_BUTTON_WHEELDOWN:
+#endif
                         Mouse.x  = event.button.x;
                         Mouse.y  = event.button.y;
 
@@ -2417,6 +2491,17 @@ int8_t CSelector::PollInputs( void )
                         break;
                 }
                 break;
+#if SDL_VERSION_ATLEAST(2,0,0)
+            case SDL_MOUSEWHEEL:
+                if (event.wheel.direction)
+                    case SDL_MOUSEWHEEL_NORMAL:
+                        EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
+                        break;
+                    case SDL_MOUSEWHEEL_FLIPPED:
+                        EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
+                        break;
+                break;
+#endif
             default:
                 break;
         }

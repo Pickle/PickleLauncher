@@ -292,9 +292,17 @@ class CSelector : public CBase
         int32_t                 FrameEndTime;       /**< Tick count at the end of the frame. */
         int32_t                 FrameStartTime;     /**< Tick count at the start of the frame. */
         int16_t                 FrameDelay;         /**< Tick duration of the frame. */
+
+#if SDL_VERSION_ATLEAST(2,0,0)
+        SDL_Window*             Window;             /**< SDL Window reference to the screen. */
+        SDL_Renderer*           Renderer;           /**< SDL Renderer reference to the render. */
+        SDL_Rect                WindowBounds;       /**< Area of the screen allowed for the window. */
+#endif
+        SDL_Surface*            Screen;             /**< SDL surface reference to the screen. */
+        SDL_PixelFormat*        PixelFormat;        /**< Pixel format of the window. */
         SDL_Rect                Mouse;              /**< Stores the absolute position of the mouse pointer. */
         SDL_Joystick*           Joystick;           /**< SDL surface reference to the first joystick device. */
-        SDL_Surface*            Screen;             /**< SDL surface reference to the screen. */
+
         SDL_Surface*            ImageBackground;    /**< SDL surface reference to the background pixel data (optional). */
         SDL_Surface*            ImagePointer;       /**< SDL surface reference to the pointer pixel data (optional). */
         SDL_Surface*            ImageSelectPointer; /**< SDL surface reference to the list select pointer pixel data (optional). */

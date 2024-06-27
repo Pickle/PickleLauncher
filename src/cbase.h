@@ -75,9 +75,10 @@ class CBase
 
         /** @brief Convert color components to a single integer
          * @param color : SDL color struct with color components
+         * @param format : pixel format of the window
          * @return color in integer form
          */
-        uint32_t        rgb_to_int          ( SDL_Color color );
+        uint32_t        rgb_to_int          ( SDL_Color color, SDL_PixelFormat* format );
 
         /** @brief Convert string to integer form
          * @param line : string to convert (typically one character)

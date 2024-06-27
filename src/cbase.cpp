@@ -72,9 +72,9 @@ uint32_t CBase::CheckRange( int32_t value, int32_t size )
     }
 }
 
-uint32_t CBase::rgb_to_int( SDL_Color color )
+uint32_t CBase::rgb_to_int( SDL_Color color, SDL_PixelFormat* format )
 {
-    return SDL_MapRGB(SDL_GetVideoSurface()->format, color.r, color.g, color.b);
+    return SDL_MapRGB(format, color.r, color.g, color.b);
 }
 
 int32_t CBase::a_to_i( const string& line )
@@ -104,6 +104,12 @@ string CBase::lowercase( string text )
 
 SDL_Surface* CBase::LoadImage( const string& filename )
 {
+#if SDL_VERSION_ATLEAST(2,0,0)
+    #define COLORKEY_OPTIONS    SDL_TRUE
+#else /* SDL 1.2 */
+    #define COLORKEY_OPTIONS    SDL_RLEACCEL | SDL_SRCCOLORKEY
+#endif
+
     SDL_Surface* loaded_image    = NULL; // The mpImage that's loaded
     SDL_Surface* optimized_image = NULL; // The optimized surface that will be used
 
@@ -112,15 +118,20 @@ SDL_Surface* CBase::LoadImage( const string& filename )
     // If the mpImage loaded
     if (NULL != loaded_image)
     {
+#if SDL_VERSION_ATLEAST(2,0,0)
+        optimized_image = loaded_image; // Create an optimized surface
+#else
         optimized_image = SDL_DisplayFormatAlpha( loaded_image ); // Create an optimized surface
+
         SDL_FreeSurface(loaded_image);                            // Free the old surface
         loaded_image = NULL;
+#endif // SDL_VERSION_ATLEAST
 
         // If the surface was optimized
         if (NULL != optimized_image)
         {
             // Color key surface
-            SDL_SetColorKey( optimized_image, SDL_RLEACCEL | SDL_SRCCOLORKEY, SDL_MapRGB( optimized_image->format, 0xFF, 0, 0xFF ) );
+            SDL_SetColorKey( optimized_image, COLORKEY_OPTIONS, SDL_MapRGB( optimized_image->format, 0xFF, 0, 0xFF ) );
         }
     }
     else

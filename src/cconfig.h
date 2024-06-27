@@ -28,7 +28,17 @@
 
 using namespace std;
 
-#define SCREEN_FLAGS        SDL_SWSURFACE           /**< Basic SDL screen flags. */
+#if SDL_VERSION_ATLEAST(2,0,0)
+    #define SCREEN_FLAGS        SDL_WINDOW_SHOWN
+    #define FULLSCREEN          SDL_WINDOW_FULLSCREEN;
+    #define KeyCode             SDL_Keycode
+#else /* SDL 1.2 */
+    #define SCREEN_FLAGS        SDL_SWSURFACE           /**< Basic SDL screen flags. */
+    #define FULLSCREEN          SDL_FULLSCREEN;
+    #define KeyCode             SDLKey
+#endif
+
+
 #define BASE_WIDTH          320                     /**< Minimum screen width size (pixels). */
 #define BASE_HEIGHT         240                     /**< Maximum screen height size (pixels). */
 #if defined(PANDORA) || defined(X86)
@@ -443,7 +453,7 @@ class CConfig : public CBase
         vector<bool>        ButtonModesLeftEnable;  /**< CONFIGURABLE force buttons to be disabled */
         vector<bool>        ButtonModesRightEnable; /**< CONFIGURABLE force buttons to be disabled */
         vector<string>      PathButtons;            /**< CONFIGURABLE Paths for the button graphics */
-        vector<SDLKey>      KeyMaps;                /**< CONFIGURABLE Key mappings to user actions */
+        vector<KeyCode>     KeyMaps;                /**< CONFIGURABLE Key mappings to user actions */
         vector<uint8_t>     JoyMaps;                /**< CONFIGURABLE Button mappings to user actions */
         vector<uint8_t>     FontSizes;              /**< CONFIGURABLE Point size of the font sizes */
         vector<SDL_Color>   Colors;                 /**< NOT CONFIGURABLE Basic color types */

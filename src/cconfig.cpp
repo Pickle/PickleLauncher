@@ -29,7 +29,11 @@ CConfig::CConfig() : CBase(),
 #else
         Fullscreen              (true),
 #endif
+#if SDL_VERSION_ATLEAST(2,0,0)
+        ScreenFlip              (true),
+#else /* SDL 1.2 */
         ScreenFlip              (false),
+#endif
         UseZipSupport           (true),
         ShowExts                (true),
         ShowHidden              (false),
@@ -194,7 +198,7 @@ void CConfig::SetDefaults( void )
 }
 
 #define LOAD_INT(X,Y)  if (UnprefixString( line, line, X ) == true) { Y = a_to_i(line); }
-#define LOAD_KEY(X,Y)  if (UnprefixString( line, line, X ) == true) { Y = (SDLKey)a_to_i(line); }
+#define LOAD_KEY(X,Y)  if (UnprefixString( line, line, X ) == true) { Y = (KeyCode)a_to_i(line); }
 #define LOAD_STR(X,Y)  if (UnprefixString( Y, line, X ) == true) {}
 
 int8_t CConfig::Load( const string& location )
