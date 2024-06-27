@@ -2493,13 +2493,19 @@ int8_t CSelector::PollInputs( void )
                 break;
 #if SDL_VERSION_ATLEAST(2,0,0)
             case SDL_MOUSEWHEEL:
-                if (event.wheel.direction)
-                    case SDL_MOUSEWHEEL_NORMAL:
-                        EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
-                        break;
-                    case SDL_MOUSEWHEEL_FLIPPED:
-                        EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
-                        break;
+#if defined(DEBUG)
+                Log( __FILENAME__, __LINE__, "DEBUG mouse wheel %d", event.wheel.y );
+#endif
+                if(event.wheel.y > 0)
+                {
+                    EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
+                    EventReleased.at(EVENT_ONE_UP)      = true;
+                }
+                if(event.wheel.y < 0)
+                {
+                    EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
+                    EventReleased.at(EVENT_ONE_DOWN)      = true;
+                }
                 break;
 #endif
             default:

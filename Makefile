@@ -74,6 +74,7 @@ USE_SDL2 = True
 CXXFLAGS += -DTRIMUI
 PLATFORM_LDFLAGS = -lfreetype -lpthread -lbz2
 else # default linux
+BUILDTYPE = debug
 PREFIX   = /usr
 TOOLS    = bin
 TARGET   =
