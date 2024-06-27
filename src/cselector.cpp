@@ -2394,6 +2394,32 @@ int8_t CSelector::PollInputs( void )
 #endif
                 break;
 
+            case SDL_JOYHATMOTION:
+                if (event.jhat.value == SDL_HAT_UP)
+                {
+                    EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
+                }
+                if (event.jhat.value == SDL_HAT_DOWN)
+                {
+                    EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
+                }
+                if (event.jhat.value == SDL_HAT_LEFT)
+                {
+                    EventPressCount.at(EVENT_PAGE_UP) = EVENT_LOOPS_ON;
+                }
+                if (event.jhat.value == SDL_HAT_RIGHT)
+                {
+                    EventPressCount.at(EVENT_PAGE_DOWN) = EVENT_LOOPS_ON;
+                }
+                if (event.jhat.value == SDL_HAT_CENTERED)
+                {
+                    EventReleased.at(EVENT_ONE_UP)      = true;
+                    EventReleased.at(EVENT_ONE_DOWN)    = true;
+                    EventReleased.at(EVENT_PAGE_UP)     = true;
+                    EventReleased.at(EVENT_PAGE_DOWN)   = true;
+                }
+                break;
+
             case SDL_MOUSEMOTION:
                 Mouse.x  = event.motion.x;
                 Mouse.y  = event.motion.y;
@@ -2499,12 +2525,12 @@ int8_t CSelector::PollInputs( void )
                 if(event.wheel.y > 0)
                 {
                     EventPressCount.at(EVENT_ONE_UP) = EVENT_LOOPS_ON;
-                    EventReleased.at(EVENT_ONE_UP)      = true;
+                    EventReleased.at(EVENT_ONE_UP)   = true;
                 }
                 if(event.wheel.y < 0)
                 {
                     EventPressCount.at(EVENT_ONE_DOWN) = EVENT_LOOPS_ON;
-                    EventReleased.at(EVENT_ONE_DOWN)      = true;
+                    EventReleased.at(EVENT_ONE_DOWN)   = true;
                 }
                 break;
 #endif
