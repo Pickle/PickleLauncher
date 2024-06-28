@@ -1257,6 +1257,7 @@ void CSelector::LoadPreview( const string& name )
 int8_t CSelector::DrawNames( SDL_Rect& location )
 {
     uint16_t startx, starty;
+    uint16_t entry_height = 0;
     SDL_Rect rect_clip;
     SDL_Surface* text_surface = NULL;
 
@@ -1308,22 +1309,6 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
     {
         for (uint16_t entry_index=0; entry_index<ListNames.size(); entry_index++)
         {
-            // Draw the selector pointer
-            if (entry_index == DisplayList.at(Mode).relative)
-            {
-                ApplyImage( location.x, location.y, ImageSelectPointer, Screen, NULL );
-
-                // Reset scroll settings
-                if (entry_index != LastSelectedEntry)
-                {
-                    CurScrollPause      = 0;
-                    CurScrollSpeed      = 0;
-                    TextScrollOffset    = 0;
-                    TextScrollDir       = true;
-                }
-                LastSelectedEntry = entry_index;
-            }
-
             if (ListNames.at(entry_index).text.length() > 0)
             {
                 text_surface = TTF_RenderText_Solid( Fonts.at(ListNames.at(entry_index).font), ListNames.at(entry_index).text.c_str(), Config.Colors.at(ListNames.at(entry_index).color) );
@@ -1332,7 +1317,7 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                 {
                     int16_t offset = 0;
 
-                    location.x += ImageSelectPointer->w;
+                    location.x += (ImageSelectPointer->w + POINTER_OFFSET);
                     RectEntries.at(entry_index).x = location.x;
                     RectEntries.at(entry_index).y = location.y;
                     RectEntries.at(entry_index).w = text_surface->w;
@@ -1393,8 +1378,9 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                     ApplyImage( location.x, location.y,  text_surface, Screen, &rect_clip );
 
                     ListNameHeight = MAX(ListNameHeight, location.y+text_surface->h );
-                    location.x -= ImageSelectPointer->w;
-                    location.y += text_surface->h + Config.EntryYDelta;
+                    location.x -= (ImageSelectPointer->w + POINTER_OFFSET);
+
+                    entry_height = text_surface->h;
 
                     FREE_IMAGE( text_surface );
                 }
@@ -1404,6 +1390,26 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                     return 1;
                 }
             }
+
+            // Draw the selector pointer
+            if (entry_index == DisplayList.at(Mode).relative)
+            {
+                int16_t offset = MAX( 0, (entry_height-ImageSelectPointer->h)/2 );
+
+                ApplyImage( location.x, location.y + offset, ImageSelectPointer, Screen, NULL );
+
+                // Reset scroll settings
+                if (entry_index != LastSelectedEntry)
+                {
+                    CurScrollPause      = 0;
+                    CurScrollSpeed      = 0;
+                    TextScrollOffset    = 0;
+                    TextScrollDir       = true;
+                }
+                LastSelectedEntry = entry_index;
+            }
+
+            location.y += entry_height + Config.EntryYDelta;
         }
     }
 

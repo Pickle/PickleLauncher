@@ -68,6 +68,7 @@ using namespace std;
 #define MS_PER_SEC              1000                            /** Milliseconds in 1 Second. */
 #define FRAMES_PER_SEC          60                              /** Frames in 1 Second. */
 #define FRAME_SKIP_RATIO        4                               /** Maximum frames skip ratio, draw 1 frame for every X number of skipped frames. */
+#define POINTER_OFFSET          5                               /** Space between pointer and entry text. */
 
 #define FREE_IMAGE(X)   if (X != NULL) { SDL_FreeSurface(X); X = NULL; } /** Macro for checking and releasing pointers to pixel data. */
 
