@@ -59,9 +59,10 @@ using namespace std;
 #define CFG_VAL_W           30                      /**< Minimum character width for the profile value. */
 
 // GUI Options Defaults
-#define ENTRY_Y_DELTA       (2*ScreenRatioH)       /** Scaled pixel amount used between entries. */
-#define ENTRY_X_OFFSET      (8*ScreenRatioW)       /** Scaled pixel amount used to separate gui elements along the X axis. */
-#define ENTRY_Y_OFFSET      (8*ScreenRatioH)       /** Scaled pixel amount used to separate gui elements along the Y axis. */
+#define PATH_Y_DELTA        (2*ScreenRatioH)        /** Scaled pixel amount used between title and path. */
+#define ENTRY_Y_DELTA       (2*ScreenRatioH)        /** Scaled pixel amount used between entries. */
+#define ENTRY_X_OFFSET      (8*ScreenRatioW)        /** Scaled pixel amount used to separate gui elements along the X axis. */
+#define ENTRY_Y_OFFSET      (8*ScreenRatioH)        /** Scaled pixel amount used to separate gui elements along the Y axis. */
 
 #define BUTTONS_MAX_LEFT    7                       /** Number of buttons on the left side of the GUI. */
 #define BUTTONS_MAX_RIGHT   4                       /** Number of buttons on the right side of the GUI. */
@@ -173,6 +174,7 @@ using namespace std;
 #define HELP_POSY_LISTNAMES         "Y coordinate in the upper left corner"
 
 // GUI Options
+#define OPT_PATH_Y_DELTA            "path_y_delta"
 #define OPT_ENTRY_Y_DELTA           "entry_y_delta"
 #define OPT_ENTRY_X_OFFSET          "entry_x_offset"
 #define OPT_ENTRY_Y_OFFSET          "entry_y_offset"
@@ -188,6 +190,7 @@ using namespace std;
 #define OPT_BUTTONLEFT_ENABLED      "buttonleft_enable"
 #define OPT_BUTTONRIGHT_ENABLED     "buttonright_enable"
 
+#define HELP_PATH_Y_DELTA           "todo"
 #define HELP_ENTRY_Y_DELTA          "todo"
 #define HELP_ENTRY_X_OFFSET         "todo"
 #define HELP_ENTRY_Y_OFFSET         "todo"
@@ -422,6 +425,7 @@ class CConfig : public CBase
         uint16_t            CPUClock;               /**< CONFIGURABLE Refer to HELP_CPU_CLOCK */
         uint16_t            ScrollSpeed;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            ScrollPauseSpeed;       /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
+        uint16_t            PathYDelta;             /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         uint16_t            EntryYDelta;            /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         int16_t             EntryXOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */
         int16_t             EntryYOffset;           /**< CONFIGURABLE Refer to HELP_SCROLL_PAUSE_SPEED */

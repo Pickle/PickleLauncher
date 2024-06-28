@@ -65,6 +65,7 @@ CConfig::CConfig() : CBase(),
         CPUClock                (CPU_CLOCK_DEF),
         ScrollSpeed             (SCROLL_SPEED),
         ScrollPauseSpeed        (SCROLL_PAUSE_SPEED),
+        PathYDelta              (0),
         EntryYDelta             (0),
         EntryXOffset            (0),
         EntryYOffset            (0),
@@ -184,6 +185,7 @@ void CConfig::SetDefaults( void )
     FontSizes.at(FONT_SIZE_MEDIUM)  = (int16_t)(12*ScreenRatioH);
     FontSizes.at(FONT_SIZE_LARGE)   = (int16_t)(14*ScreenRatioH);
 
+    PathYDelta          = (int16_t)PATH_Y_DELTA;
     EntryYDelta         = (int16_t)ENTRY_Y_DELTA;
     EntryXOffset        = (int16_t)ENTRY_X_OFFSET;
     EntryYOffset        = (int16_t)ENTRY_Y_OFFSET;
@@ -265,6 +267,7 @@ int8_t CConfig::Load( const string& location )
                 LOAD_INT( OPT_POSX_LISTNAMES,       PosX_ListNames );
                 LOAD_INT( OPT_POSY_LISTNAMES,       PosY_ListNames );
                 // GUI Options
+                LOAD_INT( OPT_PATH_Y_DELTA,         PathYDelta );
                 LOAD_INT( OPT_ENTRY_Y_DELTA,        EntryYDelta );
                 LOAD_INT( OPT_ENTRY_X_OFFSET,       EntryXOffset );
                 LOAD_INT( OPT_ENTRY_Y_OFFSET,       EntryYOffset );
@@ -420,6 +423,7 @@ int8_t CConfig::Save( const string& location )
         SAVE_INT( OPT_POSX_LISTNAMES,       HELP_POSX_LISTNAMES,        PosX_ListNames );
         SAVE_INT( OPT_POSY_LISTNAMES,       HELP_POSY_LISTNAMES,        PosY_ListNames );
         SAVE_LBL( "# GUI Options" );
+        SAVE_INT( OPT_PATH_Y_DELTA,         HELP_PATH_Y_DELTA,          PathYDelta );
         SAVE_INT( OPT_ENTRY_Y_DELTA,        HELP_ENTRY_Y_DELTA,         EntryYDelta );
         SAVE_INT( OPT_ENTRY_X_OFFSET,       HELP_ENTRY_X_OFFSET,        EntryXOffset );
         SAVE_INT( OPT_ENTRY_Y_OFFSET,       HELP_ENTRY_Y_OFFSET,        EntryYOffset );

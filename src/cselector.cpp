@@ -1698,7 +1698,7 @@ int8_t CSelector::DrawText( SDL_Rect& location )
             UpdateRect( location.x, location.y, ImageTitle->w, ImageTitle->h );
             DrawState_Title = false;
         }
-        location.y += ImageTitle->h + Config.EntryYDelta;
+        location.y += ImageTitle->h + Config.PathYDelta;
     }
 
     // Entry Filter and Filepath (they can overlap so both are drawn when either change)
