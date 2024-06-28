@@ -233,6 +233,7 @@ int8_t CSelector::OpenResources( void )
 {
     uint32_t flags;
     string text;
+    SDL_Surface* background = NULL;
 
     Log( __FILENAME__, __LINE__, "Loading config." );
     if (Config.Load( ConfigPath ))
@@ -269,6 +270,11 @@ int8_t CSelector::OpenResources( void )
 
     Window = SDL_CreateWindow("PickleLauncher", WindowBounds.x, WindowBounds.y,
                               Config.ScreenWidth, Config.ScreenHeight, flags);
+
+
+#if defined(DEBUG)
+    Log( __FILENAME__, __LINE__, "Window size %dx%d Bounds %dx%d", Config.ScreenWidth, Config.ScreenHeight, WindowBounds.x, WindowBounds.y );
+#endif
 
     if (Window == NULL)
     {
@@ -353,16 +359,22 @@ int8_t CSelector::OpenResources( void )
     }
 
     // Load images
-    ImageBackground = LoadImage( Config.PathBackground );
+    background = LOAD_IMAGE( Config.PathBackground );
+    if (background != NULL)
+    {
+        ImageBackground = ScaleSurface( background, Config.ScreenWidth, Config.ScreenHeight );
+        FREE_IMAGE(background);
+    }
+
     for (uint8_t button_index=0; button_index<Config.PathButtons.size(); button_index++)
     {
-        ImageButtons.at(button_index) = LoadImage( Config.PathButtons.at(button_index) );
+        ImageButtons.at(button_index) = LOAD_IMAGE( Config.PathButtons.at(button_index) );
     }
 
     //      Mouse pointer
     if (Config.ShowPointer==true)
     {
-        ImagePointer = LoadImage( Config.PathPointer );
+        ImagePointer = LOAD_IMAGE( Config.PathPointer );
         if (ImagePointer == NULL)
         {
             SDL_ShowCursor( SDL_ENABLE );
@@ -378,7 +390,7 @@ int8_t CSelector::OpenResources( void )
     }
 
     //      List selector pointer
-    ImageSelectPointer = LoadImage( Config.PathSelectPointer );
+    ImageSelectPointer = LOAD_IMAGE( Config.PathSelectPointer );
     if (ImageSelectPointer == NULL)
     {
         ImageSelectPointer = TTF_RenderText_Solid( Fonts.at(FONT_SIZE_MEDIUM), ENTRY_ARROW, Config.Colors.at(COLOR_BLACK) );
@@ -1233,7 +1245,7 @@ void CSelector::LoadPreview( const string& name )
     Log( __FILENAME__, __LINE__, "Loading preview picture: %s", filename.c_str() );
 #endif
 
-    preview = LoadImage( filename );
+    preview = LOAD_IMAGE( filename );
     if (preview != NULL)
     {
         ImagePreview = ScaleSurface( preview, Config.PreviewWidth, Config.PreviewHeight );

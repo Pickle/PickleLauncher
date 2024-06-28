@@ -50,6 +50,12 @@ using namespace std;
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))    /**< Return maximum of two numbers. */
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+#define LOAD_IMAGE(x)   LoadImage(x,Window)
+#else /* SDL 1.2 */
+#define LOAD_IMAGE(x)   LoadImage(x)
+#endif
+
 /** @brief Generic class to hold any common methods usable by any other class
  */
 class CBase
@@ -102,7 +108,11 @@ class CBase
          * @param filename : file location to the graphic
          * @return pointer to the optimized graphic
          */
+#if SDL_VERSION_ATLEAST(2,0,0)
+        SDL_Surface*    LoadImage           ( const string& filename, SDL_Window* window );
+#else /* SDL 1.2 */
         SDL_Surface*    LoadImage           ( const string& filename );
+#endif
 
         /** @brief Blit a surface to another surface(screen)
          * @param x : x coordinate location for the blit

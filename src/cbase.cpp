@@ -102,11 +102,13 @@ string CBase::lowercase( string text )
     return text;
 }
 
-SDL_Surface* CBase::LoadImage( const string& filename )
-{
 #if SDL_VERSION_ATLEAST(2,0,0)
+SDL_Surface* CBase::LoadImage( const string& filename, SDL_Window* window )
+{
     #define COLORKEY_OPTIONS    SDL_TRUE
 #else /* SDL 1.2 */
+SDL_Surface* CBase::LoadImage( const string& filename )
+{
     #define COLORKEY_OPTIONS    SDL_RLEACCEL | SDL_SRCCOLORKEY
 #endif
 
@@ -118,14 +120,14 @@ SDL_Surface* CBase::LoadImage( const string& filename )
     // If the mpImage loaded
     if (NULL != loaded_image)
     {
+        // Create an optimized surface
 #if SDL_VERSION_ATLEAST(2,0,0)
-        optimized_image = loaded_image; // Create an optimized surface
+        optimized_image = SDL_ConvertSurfaceFormat(loaded_image, SDL_GetWindowPixelFormat(window), 0);
 #else
-        optimized_image = SDL_DisplayFormatAlpha( loaded_image ); // Create an optimized surface
-
+        optimized_image = SDL_DisplayFormatAlpha( loaded_image );
+#endif // SDL_VERSION_ATLEAST
         SDL_FreeSurface(loaded_image);                            // Free the old surface
         loaded_image = NULL;
-#endif // SDL_VERSION_ATLEAST
 
         // If the surface was optimized
         if (NULL != optimized_image)
@@ -302,8 +304,13 @@ SDL_Surface* CBase::ScaleSurface( SDL_Surface *surface, uint16_t width, uint16_t
     SDL_Surface *_ret = SDL_CreateRGBSurface(surface->flags, width, height, surface->format->BitsPerPixel,
         surface->format->Rmask, surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
 
-    double  _stretch_factor_x = ( static_cast<double>(width) / static_cast<double>(surface->w) ),
-        _stretch_factor_y = ( static_cast<double>(height) / static_cast<double>(surface->h) );
+    double _stretch_factor_x = ( static_cast<double>(width) / static_cast<double>(surface->w) );
+    double _stretch_factor_y = ( static_cast<double>(height) / static_cast<double>(surface->h) );
+
+#if defined(DEBUG)
+    Log( __FILENAME__, __LINE__, "Scaling image %dx%d to %dx%d at BPP %d/%d", surface->w, surface->h, width, height, surface->format->BitsPerPixel, surface->format->BytesPerPixel);
+    Log( __FILENAME__, __LINE__, "  scale factor %f x %f", _stretch_factor_x, _stretch_factor_y );
+#endif
 
     for (int32_t y = 0; y < surface->h; y++)
         for (int32_t x = 0; x < surface->w; x++)
@@ -312,6 +319,14 @@ SDL_Surface* CBase::ScaleSurface( SDL_Surface *surface, uint16_t width, uint16_t
                     putpixel( _ret, static_cast<int32_t>(_stretch_factor_x * x) + o_x,
                         static_cast<int32_t>(_stretch_factor_y * y) + o_y, getpixel(surface, x, y) );
 
+    if (surface->format->BitsPerPixel <= 8) {
+#if SDL_VERSION_ATLEAST(2,0,0)
+        SDL_SetPaletteColors( _ret->format->palette, surface->format->palette->colors, 0, _ret->format->palette->ncolors );
+#else /* SDL 1.2 */
+        SDL_SetPalette( _ret, SDL_LOGPAL|SDL_PHYSPAL, surface->format->palette->colors, 0, _ret->format->palette->ncolors );
+#endif
+    }
+
     return _ret;
 }
 
@@ -319,10 +334,11 @@ uint32_t CBase::getpixel( SDL_Surface *surface, int16_t x, int16_t y )
 {
     int16_t bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + y * surface->pitch + x * bpp;
+    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + (y * surface->pitch) + (x * bpp);
 
     switch (bpp) {
         case 1:
+            //Log( __FILENAME__, __LINE__, "%dx%d %X", x, y, *p );
             return *p;
             break;
 
@@ -350,7 +366,7 @@ void CBase::putpixel( SDL_Surface *surface, int16_t x, int16_t y, uint32_t pixel
 {
     int16_t bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to set */
-    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + y * surface->pitch + x * bpp;
+    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + (y * surface->pitch) + (x * bpp);
 
     switch (bpp) {
         case 1:
