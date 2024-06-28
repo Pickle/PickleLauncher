@@ -184,17 +184,17 @@ void CConfig::SetDefaults( void )
     FontSizes.at(FONT_SIZE_MEDIUM)  = (int16_t)(12*ScreenRatioH);
     FontSizes.at(FONT_SIZE_LARGE)   = (int16_t)(14*ScreenRatioH);
 
-    EntryYDelta         = ENTRY_Y_DELTA;
-    EntryXOffset        = ENTRY_X_OFFSET;
-    EntryYOffset        = ENTRY_Y_OFFSET;
-    ButtonWidthLeft     = BUTTON_W_LEFT;
-    ButtonHeightLeft    = BUTTON_H_LEFT;
-    ButtonWidthRight    = BUTTON_W_RIGHT;
-    ButtonHeightRight   = BUTTON_H_RIGHT;
-    PreviewWidth        = PREVIEW_W;
-    PreviewHeight       = PREVIEW_H;
-    DisplayListMaxWidth = ENTRY_MAX_W;
-    FilePathMaxWidth    = FILEPATH_MAX_W;
+    EntryYDelta         = (int16_t)ENTRY_Y_DELTA;
+    EntryXOffset        = (int16_t)ENTRY_X_OFFSET;
+    EntryYOffset        = (int16_t)ENTRY_Y_OFFSET;
+    ButtonWidthLeft     = (int16_t)BUTTON_W_LEFT;
+    ButtonHeightLeft    = (int16_t)BUTTON_H_LEFT;
+    ButtonWidthRight    = (int16_t)BUTTON_W_RIGHT;
+    ButtonHeightRight   = (int16_t)BUTTON_H_RIGHT;
+    PreviewWidth        = (int16_t)PREVIEW_W;
+    PreviewHeight       = (int16_t)PREVIEW_H;
+    DisplayListMaxWidth = (int16_t)ENTRY_MAX_W;
+    FilePathMaxWidth    = (int16_t)FILEPATH_MAX_W;
 }
 
 #define LOAD_INT(X,Y)  if (UnprefixString( line, line, X ) == true) { Y = a_to_i(line); }

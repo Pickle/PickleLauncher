@@ -220,7 +220,7 @@ class CProfile : public CBase
          * @param items : entries det.
          * @return 0 if passed 1 if failed.
          */
-        int8_t  ScanDir         ( string location, bool showhidden, bool showzip, vector<listitem_t>& items );
+        int8_t  ScanDir         ( const string& location, bool showhidden, bool showzip, vector<listitem_t>& items );
 
         /** @brief Find the extension a file belongs to.
          * @param ext : extension to search for.

@@ -32,7 +32,7 @@ CSystem::CSystem() : CBase()
     }
     else
     {
-        memregs = (uint32_t*)mmap( 0, MMAP_ADDRESS, PROT_READ|PROT_WRITE, MAP_SHARED, memdev, 0xc0000000 );
+        memregs = static_cast<uint32_t*>(mmap( 0, MMAP_ADDRESS, PROT_READ|PROT_WRITE, MAP_SHARED, memdev, 0xc0000000 ));
 
         if (memregs == MAP_FAILED)
         {
@@ -70,7 +70,7 @@ void CSystem::SetCPUClock( uint16_t& mhz )
 #elif defined(WIZ) || defined(CAANOO)
     if ((memdev != 0) && (memregs != 0))
     {
-        volatile uint32_t *memregl = static_cast<volatile uint32_t*>((volatile void*)memregs);
+        volatile uint32_t *memregl = static_cast<volatile uint32_t*>(static_cast<volatile void*>(memregs));
         uint32_t mdiv, pdiv = 9, sdiv = 0;
         uint32_t v;
 
@@ -95,7 +95,7 @@ void CSystem::SetCPUClock( uint16_t& mhz )
         pdiv = ((pdiv-2)<<2) & 0xfc;
         scale &= 3;
         v = mdiv | pdiv | scale;
-        MEM_REG[0x910>>1] = v;
+        memregs[0x910>>1] = v;
     }
 
 #else

@@ -1350,11 +1350,11 @@ int8_t CSelector::DrawNames( SDL_Rect& location )
                                     CurScrollSpeed = 1;
                                     if (TextScrollDir == true)
                                     {
-                                        TextScrollOffset += Config.ScreenRatioW;
+                                        TextScrollOffset += (int16_t)Config.ScreenRatioW;
                                     }
                                     else
                                     {
-                                        TextScrollOffset -= Config.ScreenRatioW;
+                                        TextScrollOffset -= (int16_t)Config.ScreenRatioW;
                                     }
                                     Redraw = true;
                                 }
@@ -1983,7 +1983,7 @@ int8_t CSelector::RunExec( uint16_t selection )
     if (ItemsEntry.at(selection).Entry >= 0)
     {
         entry = &Profile.Entries.at(ItemsEntry.at(selection).Entry);
-        if ((entry != NULL) && (entry->Custom == true))
+        if (entry->Custom == true)
         {
             entry_found = true;
         }
@@ -2136,7 +2136,9 @@ int8_t CSelector::RunExec( uint16_t selection )
                         {
                             if (Config.FilenameArgNoExt == true)
                             {
-                                filename = filename.substr( 0, filename.find_last_of(".") );
+                                string::size_type pos = filename.find_last_of(".");
+                                if (pos != string::npos)
+                                    filename.resize( pos );
                             }
 
                             if (entry_found==true)

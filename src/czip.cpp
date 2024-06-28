@@ -269,7 +269,7 @@ int32_t CZip::Extract( unzFile uf, const string& location )
         return err;
     }
 
-    buf = (void*)malloc(WRITEBUFFERSIZE);
+    buf = static_cast<void*>(malloc(WRITEBUFFERSIZE));
     if (buf == NULL)
     {
         Log( __FILENAME__, __LINE__, "Error allocating memory" );
@@ -312,10 +312,7 @@ int32_t CZip::Extract( unzFile uf, const string& location )
         }
         while (err > 0);
 
-        if (fout)
-        {
-            fclose( fout );
-        }
+        fclose( fout );
     }
 
     if (err==UNZ_OK)

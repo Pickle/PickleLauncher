@@ -157,7 +157,7 @@ void CBase::ApplyImage( int16_t x, int16_t y, SDL_Surface* src, SDL_Surface* dst
     SDL_BlitSurface( src, clip, dst, &offset );
 }
 
-bool CBase::CheckRectCollision( SDL_Rect* boxA, SDL_Rect* boxB )
+bool CBase::CheckRectCollision( const SDL_Rect* boxA, const SDL_Rect* boxB )
 {
     // The sides of the SDL_Rects
     int16_t leftA, leftB;
@@ -232,7 +232,8 @@ bool CBase::UnprefixString( string& result, const string& line, const string& pr
         result = line.substr(pos, line.length()-pos);
         // Remove any comments
         pos = result.find("#", 0);
-        result = result.substr(0, pos);
+        if (pos != string::npos)
+            result.resize(pos);
         // Trim left and right white spaces
         result.erase( result.begin(), std::find_if(result.begin(), result.end(), std::not1(std::ptr_fun<int, int>(std::isspace))) );
         result.erase( std::find_if(result.rbegin(), result.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), result.end() );
@@ -318,7 +319,7 @@ uint32_t CBase::getpixel( SDL_Surface *surface, int16_t x, int16_t y )
 {
     int16_t bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    uint8_t *p = (uint8_t *)surface->pixels + y * surface->pitch + x * bpp;
+    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + y * surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
@@ -349,7 +350,7 @@ void CBase::putpixel( SDL_Surface *surface, int16_t x, int16_t y, uint32_t pixel
 {
     int16_t bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to set */
-    uint8_t *p = (uint8_t *)surface->pixels + y * surface->pitch + x * bpp;
+    uint8_t *p = static_cast<uint8_t*>(surface->pixels) + y * surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:

@@ -930,7 +930,7 @@ void CProfile::ScanArgument( listoption_t& item, vector<string>& values )
     }
 }
 
-int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector<listitem_t>& items )
+int8_t CProfile::ScanDir( const string& location, bool showhidden, bool showzip, vector<listitem_t>& items )
 {
     DIR *dp = NULL;
     struct dirent *dirp = NULL;
@@ -939,10 +939,8 @@ int8_t CProfile::ScanDir( string location, bool showhidden, bool showzip, vector
     int16_t alpha_index;
     int16_t ext_index;
     listitem_t item;
-    entry_t entry;
     vector<string> dirs;
     vector<string> files;
-    vector<listitem_t>::iterator sort_index;
 
     dirs.clear();
     files.clear();

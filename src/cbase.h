@@ -118,7 +118,7 @@ class CBase
          * @param boxB : second rect
          * @return true if collision occurred, false if it has not
          */
-        bool            CheckRectCollision  ( SDL_Rect* boxA, SDL_Rect* boxB );
+        bool            CheckRectCollision  ( const SDL_Rect* boxA, const SDL_Rect* boxB );
 
         /** @brief Separate string into different substring based on a delimiter string
          * @param delimiter : string value to separate text string
